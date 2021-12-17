@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
-
+const cloudinary = require("./../config/cloudinaryConfig");
 //Models
 const User = require("../Model/User");
 
@@ -19,49 +19,14 @@ router.get("/", async (req, res) => {
   }
 });
 
-// @route     POST api/user
-// @desc      Create User Account
-// @access    Private
 router.post("/", async (req, res) => {
-  const {
-    name,
-    middleName,
-    lastName,
-    email,
-    password,
-    accountStatus,
-    phoneNumber,
-    age,
-    sex,
-    batch,
-    course,
-    status,
-    currentWork,
-    monthlyIncome,
-    yearlyIncome,
-    jobExperience,
-    image,
-  } = req.body;
-
-  const user = await User.findOne({ name, middleName, lastName });
-  if (user)
-    return res.status(400).json({ msg: "User already answered the survey" });
-
-  const emailExist = await User.findOne({ email });
-  if (emailExist)
-    return res.status(400).json({ msg: "Email is already taken" });
-
-  // Hashing Password
-  const salt = 10;
-  const hashedPassword = await bcrypt.hash(password, salt);
-
   try {
-    const newUser = new User({
+    const {
       name,
       middleName,
       lastName,
       email,
-      password: hashedPassword,
+      password,
       accountStatus,
       phoneNumber,
       age,
@@ -70,16 +35,70 @@ router.post("/", async (req, res) => {
       course,
       status,
       currentWork,
-      jobExperience,
       monthlyIncome,
       yearlyIncome,
+      jobExperience,
       image,
-    });
-    const user = await newUser.save();
-    res.status(200).json(user);
+    } = req.body;
+
+    const user = await User.findOne({ name, middleName, lastName });
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ msg: "Server Error login" });
+  }
+});
+router.post("/sign-up-mobile", async (req, res) => {
+  try {
+    const {
+      firstname,
+      lastname,
+      middlename,
+      dateOfBirth,
+      placeOfBirth,
+      course,
+      yearGraduated,
+      presentOccupation,
+      companyAddress,
+      contactDetails,
+      email,
+      password,
+      profile,
+    } = req.body;
+    const isExist = await User.findOne({ email });
+    if (isExist) {
+      return res.status(203).json({ msg: "Email Already Been Taken" });
+    }
+    let userObject = {
+      firstname,
+      lastname,
+      middlename,
+      dateOfBirth,
+      placeOfBirth,
+      course,
+      yearGraduated,
+      presentOccupation,
+      companyAddress,
+      contactDetails,
+      email,
+      password: await bcrypt.hash(password, 10),
+      profile: { url: null, cloudinary_id: null },
+    };
+    if (profile) {
+      try {
+        const result = await cloudinary.uploader.upload(profile);
+        userObject.profile.url = result.secure_url;
+        userObject.profile.cloudinary_id = result.public_id;
+      } catch (e) {
+        return res.status(203).json({ msg: "Failed to Upload Profile Info" });
+      }
+    }
+    const saving = new User(userObject).save();
+    if (saving) {
+      return res.status(200).json({ msg: "Successfully Created Sign in Now" });
+    }
+    return res.status(203).json({ msg: "Failed to Sign up Membership" });
+  } catch (e) {
+    return res.status(400).json({ msg: "Failed to signup" });
   }
 });
 

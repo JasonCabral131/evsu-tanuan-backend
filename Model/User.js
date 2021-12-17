@@ -1,13 +1,35 @@
 const mongoose = require("mongoose");
 
 const UserSchema = mongoose.Schema({
-  name: {
+  firstname: {
     type: String,
   },
-  middleName: {
+  middlename: {
     type: String,
   },
-  lastName: {
+  lastname: {
+    type: String,
+  },
+  dateOfBirth: {
+    type: Date,
+  },
+  placeOfBirth: {
+    type: String,
+  },
+  course: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "course",
+  },
+  yearGraduated: {
+    type: String,
+  },
+  presentOccupation: {
+    type: String,
+  },
+  companyAddress: {
+    type: String,
+  },
+  contactDetails: {
     type: String,
   },
   email: {
@@ -16,48 +38,14 @@ const UserSchema = mongoose.Schema({
   password: {
     type: String,
   },
-  accountStatus: {
-    type: String,
-    default: "invalid",
-  },
-  phoneNumber: {
-    type: String,
-  },
-  age: {
-    type: String,
-  },
-  sex: {
-    type: String,
-  },
-  batch: {
-    type: String,
-  },
-  course: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "course",
+  profile: {
+    url: { type: String, default: null },
+    cloudinary_id: { type: String, default: null },
   },
   status: {
     type: String,
-  },
-  currentWork: {
-    type: String,
-    default: "None",
-  },
-  monthlyIncome: {
-    type: String,
-  },
-  yearlyIncome: {
-    type: String,
-  },
-  jobExperience: {
-    type: String,
-  },
-  image: {
-    type: String,
-  },
-  profile: {
-    url: { type: String, default: null },
-    cloudinaryId: { type: String, default: null },
+    enum: ["active", "pending", "banned", "archived"],
+    default: "pending",
   },
   date: {
     type: Date,

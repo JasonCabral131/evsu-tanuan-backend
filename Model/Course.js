@@ -7,12 +7,6 @@ const CourseSchema = mongoose.Schema({
   courseAbbreviation: {
     type: String,
   },
-  users: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
-    },
-  ],
   date: {
     type: Date,
     default: Date.now,
