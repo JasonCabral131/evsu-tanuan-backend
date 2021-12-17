@@ -92,7 +92,7 @@ router.post("/sign-up-mobile", async (req, res) => {
         return res.status(203).json({ msg: "Failed to Upload Profile Info" });
       }
     }
-    const saving = new User(userObject).save();
+    const saving = await new User(userObject).save();
     if (saving) {
       return res.status(200).json({ msg: "Successfully Created Sign in Now" });
     }
