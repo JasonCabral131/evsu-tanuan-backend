@@ -12,7 +12,8 @@ const JobSchema = mongoose.Schema({
   },
   jobImage: [
     {
-      type: String,
+      url: { type: String, default: null },
+      cloudinary_id: { type: String, default: null },
     },
   ],
   date: {

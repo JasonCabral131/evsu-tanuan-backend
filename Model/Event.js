@@ -12,8 +12,8 @@ const EventSchema = mongoose.Schema({
   },
   eventImage: [
     {
-      type: String,
-      default: "",
+      url: { type: String, default: null },
+      cloudinary_id: { type: String, default: null },
     },
   ],
   date: {

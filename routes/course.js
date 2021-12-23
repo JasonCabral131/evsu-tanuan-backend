@@ -11,7 +11,7 @@ const User = require("./../Model/User");
 // @access    Private
 router.get("/", async (req, res) => {
   try {
-    const courseLists = await Course.find()
+    const courseLists = await Course.find({ status: "active" })
       .sort({
         date: -1,
       })

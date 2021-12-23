@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const nodemailer = require("nodemailer");
-
+const { imageUpload } = require("./../middleware/common-middleware");
 const moment = require("moment");
 //Models
 const Event = require("../Model/Event");
@@ -16,13 +16,13 @@ const transporter = nodemailer.createTransport({
 // @route     POST api/event
 // @desc      CREATE Event
 // @access    Private
-router.post("/", async (req, res) => {
+router.post("/", imageUpload.array("images"), async (req, res) => {
   const { eventSchedule, eventTitle, eventDescription, eventImage, emails } =
     req.body;
 
   try {
     const mailOptions = {
-      from: "evsutracer@gmail.com",
+      from: "Evsu Tanauan Management",
       to: emails,
       subject: "Alumni Upcoming Events!",
       text: "Alumni Events",
@@ -39,17 +39,29 @@ router.post("/", async (req, res) => {
     transporter.sendMail(mailOptions, async function (error, info) {
       if (error) {
         console.log(error);
-        res.status(500).json({ msg: "Server Error login" });
+        return res.status(500).json({ msg: "Server Error login" });
       } else {
         // console.log("Email sent: " + info.response);
-        const newEvent = new Event({
+
+        let eventObject = {
           eventTitle,
           eventDescription,
           eventSchedule,
-          eventImage,
-        });
+        };
+        let eventImage = [];
+        if (req.files.length > 0) {
+          for (let i = 0; i < req.files.length; i++) {
+            const result = await cloudinary.uploader.upload(req.files[i].path);
+            eventImage.push({
+              url: result.secure_url,
+              cloudinary_id: result.public_id,
+            });
+          }
+          eventObject.eventImage = eventImage;
+        }
+        const newEvent = new Event(eventObject);
         const event = await newEvent.save();
-        res.status(200).json(event);
+        return res.status(200).json(event);
       }
     });
   } catch (error) {

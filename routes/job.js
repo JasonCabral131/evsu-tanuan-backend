@@ -1,7 +1,7 @@
 const router = require("express").Router();
 
 const nodemailer = require("nodemailer");
-
+const { imageUpload } = require("./../middleware/common-middleware");
 //Models
 const Job = require("../Model/Job");
 
@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
 // @route     POST api/job
 // @desc      CREATE Job
 // @access    Private
-router.post("/", async (req, res) => {
+router.post("/", imageUpload.array("images"), async (req, res) => {
   const { jobTitle, jobCompany, jobDescription, jobImage, emails } = req.body;
 
   // console.log(jobTitle, jobCompany, jobDescription, jobImage);
@@ -43,12 +43,24 @@ router.post("/", async (req, res) => {
         res.status(500).json({ msg: "Server Error login" });
       } else {
         // console.log("Email sent: " + info.response);
-        const newJob = new Job({
+        let jobObject = {
           jobTitle,
           jobCompany,
           jobDescription,
-          jobImage,
-        });
+        };
+        let jobImage = [];
+        if (req.files.length > 0) {
+          for (let i = 0; i < req.files.length; i++) {
+            const result = await cloudinary.uploader.upload(req.files[i].path);
+            jobImage.push({
+              url: result.secure_url,
+              cloudinary_id: result.public_id,
+            });
+          }
+          jobObject.jobImage = jobImage;
+        }
+        const newJob = new Job(jobObject);
+
         const savedJob = await newJob.save();
         res.status(200).json(savedJob);
       }
