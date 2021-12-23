@@ -18,13 +18,14 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
 
   try {
     // console.log("Email sent: " + info.response);
+    const coursx = JSON.parse(course);
     let eventObject = {
       eventTitle,
       eventDescription,
       eventSchedule,
       course: JSON.parse(type)
         ? []
-        : course.map((data) => {
+        : coursx.map((data) => {
             return { course: data };
           }),
     };
