@@ -28,9 +28,11 @@ const UserSchema = mongoose.Schema({
   },
   presentOccupation: {
     type: String,
+    default: "none",
   },
   companyAddress: {
     type: String,
+    default: "none",
   },
   phone: {
     type: String,
