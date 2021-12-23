@@ -5,16 +5,24 @@ const Course = require("../Model/Course");
 
 // Mock Data
 const coursesMock = require("../mock/course");
-
+const User = require("./../Model/User");
 // @route     GET api/course
 // @desc      FETCH Course
 // @access    Private
 router.get("/", async (req, res) => {
   try {
-    const courses = await Course.find().sort({
-      date: -1,
-    });
-
+    const courseLists = await Course.find()
+      .sort({
+        date: -1,
+      })
+      .lean();
+    let courses = [];
+    for (let courseList of courseLists) {
+      const users = await User.find({ course: courseList._id })
+        .select("-status -password")
+        .lean();
+      courses.push({ ...courseList, users });
+    }
     return res.status(200).json(courses);
   } catch (error) {
     console.log(error.message);
