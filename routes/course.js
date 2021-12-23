@@ -11,16 +11,14 @@ const coursesMock = require("../mock/course");
 // @access    Private
 router.get("/", async (req, res) => {
   try {
-    const courses = await Course.find()
-      .populate("users", "name middleName lastName batch")
-      .sort({
-        date: -1,
-      });
+    const courses = await Course.find().sort({
+      date: -1,
+    });
 
-    res.status(200).json(courses);
+    return res.status(200).json(courses);
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
+    return res.status(500).json({ msg: "Server Error login" });
   }
 });
 
@@ -35,10 +33,10 @@ router.post("/", async (req, res) => {
       courseAbbreviation,
     });
     const course = await newCourse.save();
-    res.status(200).json(course);
+    return res.status(200).json(course);
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
+    return res.status(500).json({ msg: "Server Error login" });
   }
 });
 
@@ -47,11 +45,18 @@ router.post("/", async (req, res) => {
 // @access    Private
 router.delete("/:id", async (req, res) => {
   try {
-    const deletedCourse = await Course.deleteOne({ _id: req.params.id });
-    res.status(200).json(deletedCourse);
+    const deletedCourse = await Course.updateOne(
+      { _id: req.params.id },
+      {
+        $set: {
+          status: "archived",
+        },
+      }
+    );
+    return res.status(200).json(deletedCourse);
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
+    return res.status(500).json({ msg: "Server Error login" });
   }
 });
 
@@ -70,10 +75,10 @@ router.put("/:id", async (req, res) => {
         },
       }
     );
-    res.status(200).json(updatedCourse);
+    return res.status(200).json(updatedCourse);
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
+    return res.status(500).json({ msg: "Server Error login" });
   }
 });
 
