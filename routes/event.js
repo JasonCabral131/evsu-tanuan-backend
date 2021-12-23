@@ -41,7 +41,7 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
         return res.status(400).json({ msg: "Failed to add Events" });
       }
       let emails = [];
-      if (new Boolean(type)) {
+      if (JSON.parse(type)) {
         emails = await User.find().select("email -_id").lean();
       } else {
         for (let i = 0; i < course.length; i++) {
