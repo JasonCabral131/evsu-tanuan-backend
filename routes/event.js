@@ -22,7 +22,11 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
       eventTitle,
       eventDescription,
       eventSchedule,
-      course: new Boolean(type) ? [] : course,
+      course: JSON.parse(type)
+        ? []
+        : course.map((data) => {
+            return { course: data };
+          }),
     };
     let eventImage = [];
     if (req.files.length > 0) {
