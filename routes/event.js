@@ -49,8 +49,8 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
       if (JSON.parse(type)) {
         emails = await User.find().select("email -_id").lean();
       } else {
-        for (let i = 0; i < course.length; i++) {
-          const users = await User.find({ course: course[i] })
+        for (let i = 0; i < coursx.length; i++) {
+          const users = await User.find({ course: coursx[i] })
             .select("email -_id")
             .lean();
           emails = [...emails, ...users];
