@@ -10,9 +10,11 @@ const JobSchema = mongoose.Schema({
   jobDescription: {
     type: String,
   },
-  jobImage: {
-    type: String,
-  },
+  jobImage: [
+    {
+      type: String,
+    },
+  ],
   date: {
     type: Date,
     default: Date.now,

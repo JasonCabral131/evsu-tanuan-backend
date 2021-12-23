@@ -68,6 +68,7 @@ router.post(
           userObject.profile.cloudinary_id = result.public_id;
         }
       }
+
       const saving = await new User(userObject).save();
       if (saving) {
         return res
