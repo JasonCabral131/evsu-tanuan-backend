@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const cloudinary = require("./../config/cloudinaryConfig");
 //Models
 const User = require("../Model/User");
-
+const { imageUpload } = require("./../middleware/common-middleware");
 // @route     GET api/user
 // @desc      FETCH User
 // @access    Private
@@ -19,34 +19,68 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
-  try {
-    const {
-      name,
-      middleName,
-      lastName,
-      email,
-      password,
-      accountStatus,
-      phoneNumber,
-      age,
-      sex,
-      batch,
-      course,
-      status,
-      currentWork,
-      monthlyIncome,
-      yearlyIncome,
-      jobExperience,
-      image,
-    } = req.body;
-
-    const user = await User.findOne({ name, middleName, lastName });
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
+router.post(
+  "/sign-up-web",
+  imageUpload.fields([{ name: "profile" }]),
+  async (req, res) => {
+    try {
+      const {
+        firstname,
+        lastname,
+        middlename,
+        dateOfBirth,
+        placeOfBirth,
+        course,
+        yearGraduated,
+        presentOccupation,
+        companyAddress,
+        phone,
+        email,
+        password,
+        sex,
+      } = req.body;
+      const isExist = await User.findOne({ email });
+      if (isExist) {
+        return res.status(203).json({ msg: "Email Already Been Taken" });
+      }
+      let userObject = {
+        firstname,
+        lastname,
+        middlename,
+        dateOfBirth,
+        placeOfBirth,
+        course,
+        yearGraduated,
+        presentOccupation,
+        companyAddress,
+        phone,
+        email,
+        sex,
+        password: await bcrypt.hash(password, 10),
+        profile: { url: null, cloudinary_id: null },
+      };
+      if (req.files.profile) {
+        if (req.files.profile.length > 0) {
+          const result = await cloudinary.uploader.upload(
+            req.files.profile[0].path
+          );
+          userObject.profile.url = result.secure_url;
+          userObject.profile.cloudinary_id = result.public_id;
+        }
+      }
+      const saving = await new User(userObject).save();
+      if (saving) {
+        return res
+          .status(200)
+          .json({ msg: "Successfully Created Sign in Now" });
+      }
+      return res.status(203).json({ msg: "Failed to Sign up Membership" });
+    } catch (e) {
+      return res.status(400).json({ msg: "Failed to signup" });
+    }
   }
-});
+);
+
 router.post("/sign-up-mobile", async (req, res) => {
   try {
     const {
@@ -59,10 +93,11 @@ router.post("/sign-up-mobile", async (req, res) => {
       yearGraduated,
       presentOccupation,
       companyAddress,
-      contactDetails,
+      phone,
       email,
       password,
       profile,
+      sex,
     } = req.body;
     const isExist = await User.findOne({ email });
     if (isExist) {
@@ -78,8 +113,9 @@ router.post("/sign-up-mobile", async (req, res) => {
       yearGraduated,
       presentOccupation,
       companyAddress,
-      contactDetails,
+      phone,
       email,
+      sex,
       password: await bcrypt.hash(password, 10),
       profile: { url: null, cloudinary_id: null },
     };
@@ -102,6 +138,7 @@ router.post("/sign-up-mobile", async (req, res) => {
   }
 });
 
+router.post("/");
 // @route     PUT api/user/:id
 // @desc      Update User Account
 // @access    Private

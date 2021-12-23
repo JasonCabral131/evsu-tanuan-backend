@@ -10,6 +10,9 @@ const UserSchema = mongoose.Schema({
   lastname: {
     type: String,
   },
+  sex: {
+    type: String,
+  },
   dateOfBirth: {
     type: Date,
   },
@@ -29,7 +32,7 @@ const UserSchema = mongoose.Schema({
   companyAddress: {
     type: String,
   },
-  contactDetails: {
+  phone: {
     type: String,
   },
   email: {

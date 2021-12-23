@@ -23,7 +23,7 @@ const Subscriber = require("../Model/Subscriber");
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "evsutracer@gmail.com",
+    user: "evsu.alumni2000@gmail.com",
     pass: "123qweasdzxcA!",
   },
 });
