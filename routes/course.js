@@ -149,6 +149,15 @@ router.put("/addUser/:id", async (req, res) => {
   }
 });
 
+router.get("/course-info/:id", async (req, res) => {
+  try {
+    const courseLists = await Course.find({ _id: req.params.id }).lean();
+    return res.status(200).json({ msg: "Course", courseLists });
+  } catch (e) {
+    return res.status(400).json({ msg: "No Data Found" });
+  }
+});
+
 // @route     POST api/course/insertMany
 // @desc      ADD ALL Courses
 // @access    Private

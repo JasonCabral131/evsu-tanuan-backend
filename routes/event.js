@@ -107,10 +107,12 @@ router.get("/", async (req, res) => {
 // @route     PUT api/event/:id
 // @desc      Updat Event
 // @access    Private
-router.put("/:id", async (req, res) => {
-  const { eventTitle, eventDescription, eventSchedule } = req.body;
+router.put("/:id", imageUpload.array("images"), async (req, res) => {
+  const { eventTitle, eventDescription, eventSchedule, course, type } =
+    req.body;
   // eventSchedule
   try {
+    const courx = JSON.parse(course);
     const updateEvent = await Event.updateOne(
       { _id: req.params.id },
       {
@@ -118,13 +120,33 @@ router.put("/:id", async (req, res) => {
           eventTitle,
           eventDescription,
           eventSchedule,
+          course: JSON.parse(type) ? [] : courx,
         },
       }
     );
-    res.status(200).json(updateEvent);
+    if (updateEvent) {
+      let eventImage = [];
+      if (req.files.length > 0) {
+        for (let i = 0; i < req.files.length; i++) {
+          const result = await cloudinary.uploader.upload(req.files[i].path);
+          eventImage.push({
+            url: result.secure_url,
+            cloudinary_id: result.public_id,
+          });
+        }
+      }
+      const uploadingData = await Event.update(
+        { _id: req.params.id },
+        { $push: { eventImage: { $each: eventImage } } },
+        { upsert: true }
+      );
+      return res.status(200).json({ msg: "success updating", uploadingData });
+    } else {
+      return res.status(500).json({ msg: "Server Error login" });
+    }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
+    return res.status(500).json({ msg: "Server Error login" });
   }
 });
 
@@ -138,6 +160,33 @@ router.delete("/:id", async (req, res) => {
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ msg: "Server Error login" });
+  }
+});
+router.post("/event-deleting-image/", async (req, res) => {
+  try {
+    const { eventId, imageId } = req.body;
+    const deleting = await Event.updateOne(
+      { _id: eventId },
+      {
+        $pull: {
+          eventImage: {
+            _id: imageId,
+          },
+        },
+      }
+    );
+    return res.status(200).json({ msg: "Success deleting", deleting });
+  } catch (e) {
+    return res.status(400).json({ msg: "No Data Found" });
+  }
+});
+
+router.get("/event-info/:id", async (req, res) => {
+  try {
+    const event = await Event.find({ _id: req.params.id }).lean();
+    return res.status(200).json({ msg: "Event", event });
+  } catch (e) {
+    return res.status(400).json({ msg: "No Data Found" });
   }
 });
 
