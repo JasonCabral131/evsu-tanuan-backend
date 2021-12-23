@@ -191,7 +191,11 @@ router.post("/event-deleting-image/", async (req, res) => {
 router.get("/event-info/:id", async (req, res) => {
   try {
     const event = await Event.findOne({ _id: req.params.id }).lean();
-    return res.status(200).json({ msg: "Event", event });
+    if (event) {
+      return res.status(200).json({ msg: "Event", event });
+    } else {
+      return res.status(400).json({ msg: "No Data Found" });
+    }
   } catch (e) {
     return res.status(400).json({ msg: "No Data Found" });
   }
