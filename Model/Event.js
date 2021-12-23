@@ -16,6 +16,14 @@ const EventSchema = mongoose.Schema({
       cloudinary_id: { type: String, default: null },
     },
   ],
+  course: [
+    {
+      course: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "course",
+      },
+    },
+  ],
   date: {
     type: Date,
     default: Date.now,

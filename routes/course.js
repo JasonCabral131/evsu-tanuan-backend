@@ -109,6 +109,22 @@ router.put("/:id", async (req, res) => {
     return res.status(500).json({ msg: "Server Error login" });
   }
 });
+router.post("/course-to-active", async (req, res) => {
+  try {
+    const { course_id } = req.body;
+    const updating = await Course.updateOne(
+      { _id: course_id },
+      {
+        $set: {
+          status: "active",
+        },
+      }
+    );
+    return res.status(200).json(updating);
+  } catch (e) {
+    return res.status(400).json({ msg: "failed to update" });
+  }
+});
 
 // @route     PUT api/course/addUser/:id
 // @desc      Add User to Course

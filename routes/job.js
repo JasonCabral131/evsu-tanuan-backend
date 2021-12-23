@@ -1,10 +1,10 @@
 const router = require("express").Router();
-
+const cloudinary = require("./../config/cloudinaryConfig");
 const nodemailer = require("nodemailer");
 const { imageUpload } = require("./../middleware/common-middleware");
 //Models
 const Job = require("../Model/Job");
-
+const JobApply = require("./../Model/JobApply");
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -122,4 +122,32 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+router.post("/apply-job-web", imageUpload.array("images"), async (req, res) => {
+  try {
+    const { job, user } = req.body;
+    const apply = await JobApply.findOne({ job, user }).lean();
+    if (apply) {
+      return res.status(400).json({ msg: "You Already Apply for Job" });
+    }
+    let jobApply = {
+      job,
+      user,
+    };
+    let resume = [];
+    if (req.files.length > 0) {
+      for (let i = 0; i < req.files.length; i++) {
+        const result = await cloudinary.uploader.upload(req.files[i].path);
+        resume.push({
+          url: result.secure_url,
+          cloudinary_id: result.public_id,
+        });
+      }
+      jobApply.resume = resume;
+    }
+    const saving = await new JobApply(jobApply).save();
+    return res.status(200).json({ msg: "Applied Successfully", saving });
+  } catch (e) {
+    return res.status(400).json({ msg: "Failed to get Data" });
+  }
+});
 module.exports = router;
