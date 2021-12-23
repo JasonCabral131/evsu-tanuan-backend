@@ -98,10 +98,10 @@ router.put("/addUser/:id", async (req, res) => {
         },
       }
     );
-    res.status(200).json({ msg: "User Added with his course", updated });
+    return res.status(200).json({ msg: "User Added with his course", updated });
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: "Server Error" });
+    return res.status(500).json({ msg: "Server Error" });
   }
 });
 
@@ -110,11 +110,15 @@ router.put("/addUser/:id", async (req, res) => {
 // @access    Private
 router.post("/insertMany", async (req, res) => {
   try {
+    const hasUsed = await Course.find().lean();
+    if (hasUsed.length > 0) {
+      return res.status(400).json({ msg: "Course Already Added" });
+    }
     const courses = await Course.insertMany(coursesMock);
-    res.status(200).json(courses);
+    return res.status(200).json(courses);
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
+    return res.status(500).json({ msg: "Server Error login" });
   }
 });
 

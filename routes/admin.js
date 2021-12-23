@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
+const shortid = require("shortid");
+const { sendingEmail } = require("./../middleware/common-middleware");
 //Models
 const Admin = require("../Model/Admin");
 
@@ -62,6 +63,42 @@ router.delete("/:id", async (req, res) => {
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ msg: "Server Error login" });
+  }
+});
+router.post("/reset-admin", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const admin = await Admin.findOne({ email }).lean();
+    if (admin) {
+      const salt = 10;
+      const generatedPassword = shortid.generate();
+      const hashedPassword = await bcrypt.hash(generatedPassword, salt);
+
+      const mailoption = {
+        from: "Evsu Tanauan Management",
+        to: email,
+        subject: "Forgot Password",
+        text: "Your New Password ",
+        html: `  <h1 >Your New Password</h1>
+        <h1 style="color: red;">${generatedPassword}</h1>`,
+      };
+      const sending = await sendingEmail(mailoption);
+      const updated = await Admin.updateOne(
+        { email },
+        {
+          $set: {
+            password: hashedPassword,
+          },
+        }
+      );
+      return res
+        .status(200)
+        .json({ msg: "Password Updated", updated, sending });
+    } else {
+      return res.status(400).json({ msg: "Failed to Reset Password x" });
+    }
+  } catch (e) {
+    return res.status(400).json({ msg: "Failed to Reset Password" });
   }
 });
 
