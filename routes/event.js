@@ -94,7 +94,7 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
 // @access    Private
 router.get("/", async (req, res) => {
   try {
-    const events = await Event.find().sort({
+    const events = await Event.find({ status: "active" }).sort({
       date: -1,
     });
     res.status(200).json(events);
@@ -155,7 +155,14 @@ router.put("/:id", imageUpload.array("images"), async (req, res) => {
 // @access    Private
 router.delete("/:id", async (req, res) => {
   try {
-    const deletedEvent = await Event.deleteOne({ _id: req.params.id });
+    const deletedEvent = await Event.updateOne(
+      { _id: req.params.id },
+      {
+        $set: {
+          status: "archived",
+        },
+      }
+    );
     res.status(200).json(deletedEvent);
   } catch (error) {
     console.log(error.message);
