@@ -16,6 +16,19 @@ const JobSchema = mongoose.Schema({
       cloudinary_id: { type: String, default: null },
     },
   ],
+  course: [
+    {
+      course: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "course",
+      },
+    },
+  ],
+  status: {
+    type: String,
+    enum: ["active", "archived"],
+    default: "active",
+  },
   date: {
     type: Date,
     default: Date.now,

@@ -1,73 +1,87 @@
 const router = require("express").Router();
 const cloudinary = require("./../config/cloudinaryConfig");
-const nodemailer = require("nodemailer");
+
 const { imageUpload } = require("./../middleware/common-middleware");
 //Models
 const Job = require("../Model/Job");
 const JobApply = require("./../Model/JobApply");
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "evsutracer@gmail.com",
-    pass: "123qweasdzxcA!",
-  },
-});
-
+const User = require("./../Model/User");
+const Notify = require("./../Model/notifier");
+const { sendingEmail } = require("./../middleware/common-middleware");
 // @route     POST api/job
 // @desc      CREATE Job
 // @access    Private
 router.post("/", imageUpload.array("images"), async (req, res) => {
-  const { jobTitle, jobCompany, jobDescription, jobImage, emails } = req.body;
+  const { jobTitle, jobCompany, jobDescription, course, type } = req.body;
 
   // console.log(jobTitle, jobCompany, jobDescription, jobImage);
-
   try {
-    const mailOptions = {
-      from: "evsutracer@gmail.com",
-      to: emails,
-      subject: "Alumni Job Offer",
-      text: "Job Posting",
-      html: `
-      <body>
-        <img src="https://www.evsu.edu.ph/wp-content/uploads/2020/01/EVSU-Logo.png"/>
-        <h1> We are Hiring at ${jobCompany}! </h1> 
-        <h2> Looking for a ${jobTitle}. </h2> 
-        <p> <span style="font-weight:bold;"> Job description </span>  ${jobDescription}. </p> <br/>
-        <p> If you are interested, please emails us your resume at ${jobCompany}@gmail.com Thank you! </p>
-      </body>
-      `,
+    const coursx = JSON.parse(course);
+    let jobObject = {
+      jobTitle,
+      jobCompany,
+      jobDescription,
+      course: JSON.parse(type)
+        ? []
+        : coursx.map((data) => {
+            return { course: data };
+          }),
     };
-    transporter.sendMail(mailOptions, async function (error, info) {
-      if (error) {
-        console.log(error);
-        res.status(500).json({ msg: "Server Error login" });
-      } else {
-        // console.log("Email sent: " + info.response);
-        let jobObject = {
-          jobTitle,
-          jobCompany,
-          jobDescription,
-        };
-        let jobImage = [];
-        if (req.files.length > 0) {
-          for (let i = 0; i < req.files.length; i++) {
-            const result = await cloudinary.uploader.upload(req.files[i].path);
-            jobImage.push({
-              url: result.secure_url,
-              cloudinary_id: result.public_id,
-            });
-          }
-          jobObject.jobImage = jobImage;
-        }
-        const newJob = new Job(jobObject);
-
-        const savedJob = await newJob.save();
-        res.status(200).json(savedJob);
+    let jobImage = [];
+    if (req.files.length > 0) {
+      for (let i = 0; i < req.files.length; i++) {
+        const result = await cloudinary.uploader.upload(req.files[i].path);
+        jobImage.push({
+          url: result.secure_url,
+          cloudinary_id: result.public_id,
+        });
       }
+      jobObject.jobImage = jobImage;
+    }
+    const newJob = new Job(jobObject);
+
+    newJob.save(async (error, save) => {
+      if (error) {
+        return res.status(400).json({ msg: "Failed to add Job" });
+      }
+      let emails = [];
+      if (JSON.parse(type)) {
+        emails = await User.find().select("email -_id").lean();
+      } else {
+        for (let i = 0; i < coursx.length; i++) {
+          const users = await User.find({ course: coursx[i] })
+            .select("email -_id")
+            .lean();
+          emails = [...emails, ...users];
+        }
+      }
+      if (emails.length > 0) {
+        const mailOptions = {
+          from: "evsutracer@gmail.com",
+          to: emails,
+          subject: "Alumni Job Offer",
+          text: "Job Posting",
+          html: `
+                <body>
+                  <img src="https://www.evsu.edu.ph/wp-content/uploads/2020/01/EVSU-Logo.png"/>
+                  <h1> We are Hiring at ${jobCompany}! </h1> 
+                  <h2> Looking for a ${jobTitle}. </h2> 
+                  <p> <span style="font-weight:bold;"> Job description </span>  ${jobDescription}. </p> <br/>
+                  <p> If you are interested, please emails us your resume at ${jobCompany}@gmail.com Thank you! </p>
+                </body>
+                `,
+        };
+        const sending = await sendingEmail(mailOptions);
+        return res
+          .status(200)
+          .json({ msg: "Successfully Created", save, sending });
+      }
+      return res.status(200).json({ msg: "Successfully Created", save });
     });
+    return res.status(200).json(savedJob);
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
+    return res.status(500).json({ msg: "Server Error login" });
   }
 });
 
@@ -76,7 +90,7 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
 // @access    Private
 router.get("/", async (req, res) => {
   try {
-    const jobs = await Job.find().sort({
+    const jobs = await Job.find({ status: "active" }).sort({
       date: -1,
     });
     res.status(200).json(jobs);
@@ -89,9 +103,10 @@ router.get("/", async (req, res) => {
 // @route     PUT api/job/:id
 // @desc      Update Job
 // @access    Private
-router.put("/:id", async (req, res) => {
-  const { jobTitle, jobCompany, jobDescription } = req.body;
+router.put("/:id", imageUpload.array("images"), async (req, res) => {
+  const { jobTitle, jobCompany, jobDescription, course, type } = req.body;
   try {
+    const courx = JSON.parse(course);
     const updatedJob = await Job.updateOne(
       { _id: req.params.id },
       {
@@ -99,13 +114,33 @@ router.put("/:id", async (req, res) => {
           jobTitle,
           jobCompany,
           jobDescription,
+          course: JSON.parse(type) ? [] : courx,
         },
       }
     );
-    res.status(200).json(updatedJob);
+    if (updatedJob) {
+      let jobImage = [];
+      if (req.files.length > 0) {
+        for (let i = 0; i < req.files.length; i++) {
+          const result = await cloudinary.uploader.upload(req.files[i].path);
+          jobImage.push({
+            url: result.secure_url,
+            cloudinary_id: result.public_id,
+          });
+        }
+      }
+      const uploadingData = await Job.update(
+        { _id: req.params.id },
+        { $push: { jobImage: { $each: jobImage } } },
+        { upsert: true }
+      );
+      return res.status(200).json({ msg: "success updating", uploadingData });
+    } else {
+      return res.status(500).json({ msg: "Server Error login" });
+    }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
+    return res.status(500).json({ msg: "Server Error login" });
   }
 });
 
@@ -114,11 +149,45 @@ router.put("/:id", async (req, res) => {
 // @access    Private
 router.delete("/:id", async (req, res) => {
   try {
-    const deletedJob = await Job.deleteOne({ _id: req.params.id });
-    res.status(200).json(deletedJob);
+    const deletedEvent = await Job.updateOne(
+      { _id: req.params.id },
+      {
+        $set: {
+          status: "archived",
+        },
+      }
+    );
+    res.status(200).json(deletedEvent);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ msg: "Server Error login" });
+  }
+});
+router.post("/job-deleting-image/", async (req, res) => {
+  try {
+    const { jobId, imageId } = req.body;
+    const deleting = await Job.updateOne(
+      { _id: jobId },
+      {
+        $pull: {
+          jobImage: {
+            _id: imageId,
+          },
+        },
+      }
+    );
+    return res.status(200).json({ msg: "Success deleting", deleting });
+  } catch (e) {
+    return res.status(400).json({ msg: "No Data Found" });
+  }
+});
+
+router.get("/job-info/:id", async (req, res) => {
+  try {
+    const event = await Job.find({ _id: req.params.id }).lean();
+    return res.status(200).json({ msg: "Job", event });
+  } catch (e) {
+    return res.status(400).json({ msg: "No Data Found" });
   }
 });
 
