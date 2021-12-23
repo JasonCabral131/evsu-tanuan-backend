@@ -47,6 +47,26 @@ router.post("/", async (req, res) => {
     return res.status(500).json({ msg: "Server Error login" });
   }
 });
+router.get("/get-archived", async (req, res) => {
+  try {
+    const courseLists = await Course.find({ status: "archived" })
+      .sort({
+        date: -1,
+      })
+      .lean();
+    let courses = [];
+    for (let courseList of courseLists) {
+      const users = await User.find({ course: courseList._id })
+        .select("-status -password")
+        .lean();
+      courses.push({ ...courseList, users });
+    }
+    return res.status(200).json(courses);
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ msg: "Server Error login" });
+  }
+});
 
 // @route     Delete api/course/:id
 // @desc      Delete Course
