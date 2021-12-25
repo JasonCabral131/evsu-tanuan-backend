@@ -47,6 +47,19 @@ router.get("/archived-user", async (req, res) => {
     res.status(500).json({ msg: "Server Error login" });
   }
 });
+router.get("/banned-user", async (req, res) => {
+  try {
+    const users = await User.find({ status: "banned" })
+      .populate("course", "courseName")
+      .sort({
+        date: -1,
+      });
+    res.status(200).json(users);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ msg: "Server Error login" });
+  }
+});
 router.post(
   "/sign-up-web",
   imageUpload.fields([{ name: "profile" }]),

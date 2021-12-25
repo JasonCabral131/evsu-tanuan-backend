@@ -33,9 +33,9 @@ router.post("/", async (req, res) => {
 
     //  Email not found
     // Check if Admin Email Exist
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email, status: "active" });
     if (!user) {
-      return res.status(404).json({ msg: "Incorrect username and password" });
+      return res.status(404).json({ msg: "Invalid User" });
     }
 
     // Check  Password
@@ -57,7 +57,7 @@ router.post("/", async (req, res) => {
     return res.header("auth-token", token).status(200).json({ token, user });
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
+    return res.status(500).json({ msg: "Server Error login" });
   }
 });
 
