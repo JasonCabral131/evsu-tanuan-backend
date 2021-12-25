@@ -185,7 +185,10 @@ router.post("/job-deleting-image/", async (req, res) => {
 router.get("/job-info/:id", async (req, res) => {
   try {
     const event = await Job.findOne({ _id: req.params.id }).lean();
-    return res.status(200).json({ msg: "Job", event });
+    if (event) {
+      return res.status(200).json({ msg: "Job", event });
+    }
+    return res.status(400).json({ msg: "Failed to retrieved data" });
   } catch (e) {
     return res.status(400).json({ msg: "No Data Found" });
   }
