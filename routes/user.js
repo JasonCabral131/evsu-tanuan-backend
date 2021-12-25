@@ -10,16 +10,43 @@ const Notify = require("./../Model/notifier");
 // @access    Private
 router.get("/", async (req, res) => {
   try {
-    const users = await User.find().populate("course", "courseName").sort({
-      date: -1,
-    });
+    const users = await User.find({ status: "active" })
+      .populate("course", "courseName")
+      .sort({
+        date: -1,
+      });
     res.status(200).json(users);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ msg: "Server Error login" });
   }
 });
-
+router.get("/pending-user", async (req, res) => {
+  try {
+    const users = await User.find({ status: "pending" })
+      .populate("course", "courseName")
+      .sort({
+        date: -1,
+      });
+    res.status(200).json(users);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ msg: "Server Error login" });
+  }
+});
+router.get("/archived-user", async (req, res) => {
+  try {
+    const users = await User.find({ status: "archived" })
+      .populate("course", "courseName")
+      .sort({
+        date: -1,
+      });
+    res.status(200).json(users);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ msg: "Server Error login" });
+  }
+});
 router.post(
   "/sign-up-web",
   imageUpload.fields([{ name: "profile" }]),
@@ -140,7 +167,46 @@ router.post("/sign-up-mobile", async (req, res) => {
   }
 });
 
-router.post("/");
+router.post("/update-status-user", async (req, res) => {
+  try {
+    const { userId, status } = req.body;
+    const isExist = await User.findOne({ _id: userId }).lean();
+    if (isExist) {
+      const updating = await User.findOneAndUpdate(
+        { _id: userId },
+        { $set: { status } }
+      );
+      if (updating) {
+        return res.status(200).json({ msg: "Successfully Updated Status" });
+      }
+      return res.status(400).json({ msg: "Failed to Update" });
+    } else {
+      return res.status(400).json({ msg: "Failed to Update" });
+    }
+  } catch (e) {
+    return res.status(400).json({ msg: "Failed to Update" });
+  }
+});
+router.post("/deleting-pending-request", async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const isActive = await User.findOne({
+      _id: userId,
+      status: { $ne: "pending" },
+    }).lean();
+    if (isActive) {
+      return res.status(400).json({ msg: "User Status is not Pending" });
+    }
+
+    const deletedUser = await User.deleteOne({ _id: userId });
+    if (deletedUser) {
+      return res.status(200).json({ msg: "Delete Success fully", deletedUser });
+    }
+    return res.status(400).json({ msg: "Failed to delete" });
+  } catch (e) {
+    return res.status(500).json({ msg: "Failed to Delete" });
+  }
+});
 // @route     PUT api/user/:id
 // @desc      Update User Account
 // @access    Private
@@ -189,18 +255,4 @@ router.put("/:id", async (req, res) => {
     res.status(500).json({ msg: "Server Error login" });
   }
 });
-
-// @route     Delete api/user/:id
-// @desc      Delete User Account
-// @access    Private
-router.delete("/:id", async (req, res) => {
-  try {
-    const deletedUser = await User.deleteOne({ _id: req.params.id });
-    res.status(200).json({ msg: "Delete Success fully", deletedUser });
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
-  }
-});
-
 module.exports = router;

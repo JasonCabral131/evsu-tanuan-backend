@@ -94,6 +94,13 @@ router.delete("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const { courseName, courseAbbreviation } = req.body;
   try {
+    const isExist = await Course.findOne({
+      _id: { $ne: req.params.id },
+      courseName: { $regex: courseName },
+    }).lean();
+    if (isExist) {
+      return res.status(400).json({ msg: "Course Already Existed" });
+    }
     const updatedCourse = await Course.updateOne(
       { _id: req.params.id },
       {
