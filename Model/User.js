@@ -44,8 +44,8 @@ const UserSchema = mongoose.Schema({
     type: String,
   },
   profile: {
-    url: { type: String, default: null },
-    cloudinary_id: { type: String, default: null },
+    url: { type: String, default: "" },
+    cloudinary_id: { type: String, default: "" },
   },
   status: {
     type: String,
