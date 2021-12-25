@@ -7,6 +7,7 @@ const Job = require("../Model/Job");
 const JobApply = require("./../Model/JobApply");
 const User = require("./../Model/User");
 const Notify = require("./../Model/notifier");
+const NotifyUser = require("./../Model/notify-users");
 const { sendingEmail } = require("./../middleware/common-middleware");
 // @route     POST api/job
 // @desc      CREATE Job
@@ -73,9 +74,18 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
                 `,
         };
         const sending = await sendingEmail(mailOptions);
+        const sendNotify = await new NotifyUser({
+          link: `/job-offer-information/${save._id}`,
+          message: `New Job Offering Await you check it now!! => <Link to={${`/job-offer-information/${save._id}`}} style={{fontWeight: 'bolder', letterSpacing: 2}}>${jobTitle}</Link>`,
+          course: JSON.parse(type)
+            ? []
+            : coursx.map((data) => {
+                return { course: data };
+              }),
+        }).save();
         return res
           .status(200)
-          .json({ msg: "Successfully Created", save, sending });
+          .json({ msg: "Successfully Created", save, sending, sendNotify });
       }
       return res.status(200).json({ msg: "Successfully Created", save });
     });
@@ -203,29 +213,45 @@ router.get("/job-info/:id", async (req, res) => {
 router.post("/apply-job-web", imageUpload.array("images"), async (req, res) => {
   try {
     const { job, user } = req.body;
+    const findUser = await User.findOne({ _id: user }).lean();
     const apply = await JobApply.findOne({ job, user }).lean();
-    if (apply) {
-      return res.status(400).json({ msg: "You Already Apply for Job" });
-    }
-    let jobApply = {
-      job,
-      user,
-    };
-    let resume = [];
-    if (req.files.length > 0) {
-      for (let i = 0; i < req.files.length; i++) {
-        const result = await cloudinary.uploader.upload(req.files[i].path);
-        resume.push({
-          url: result.secure_url,
-          cloudinary_id: result.public_id,
-        });
+    if (findUser) {
+      if (apply) {
+        return res.status(400).json({ msg: "You Already Apply for Job" });
       }
-      jobApply.resume = resume;
+      let jobApply = {
+        job,
+        user,
+      };
+      let resume = [];
+      if (req.files.length > 0) {
+        for (let i = 0; i < req.files.length; i++) {
+          const result = await cloudinary.uploader.upload(req.files[i].path);
+          resume.push({
+            url: result.secure_url,
+            cloudinary_id: result.public_id,
+          });
+        }
+        jobApply.resume = resume;
+      }
+      const saving = await new JobApply(jobApply).save();
+      if (saving) {
+        const notifyAdmin = await new Notify({
+          link: `/job-applicant-info/${job}/${user}`,
+          message: `New Application Found => <Link style={{fontWeight: 'bolder', letterSpacing: 2}} to={${`/job-applicant-info/${job}/${user}`}}>${
+            user.firstname + " " + user.lastname
+          }</Link>`,
+        }).save();
+        return res
+          .status(200)
+          .json({ msg: "Applied Successfully", saving, notifyAdmin });
+      }
+      return res.status(400).json({ msg: "Failed to Apply" });
+    } else {
+      return res.status(400).json({ msg: "Failed to Apply" });
     }
-    const saving = await new JobApply(jobApply).save();
-    return res.status(200).json({ msg: "Applied Successfully", saving });
   } catch (e) {
-    return res.status(400).json({ msg: "Failed to get Data" });
+    return res.status(400).json({ msg: "Failed to Apply" });
   }
 });
 module.exports = router;
