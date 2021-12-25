@@ -173,7 +173,7 @@ router.delete("/:id", async (req, res) => {
 });
 router.post("/event-deleting-image/", async (req, res) => {
   try {
-    const { eventId, imageId } = req.body;
+    const { eventId, imageId, cloudinary_id } = req.body;
     const deleting = await Event.updateOne(
       { _id: eventId },
       {
@@ -184,7 +184,10 @@ router.post("/event-deleting-image/", async (req, res) => {
         },
       }
     );
-    return res.status(200).json({ msg: "Success deleting", deleting });
+    if (deleting) {
+      await cloudinary.uploader.destroy(cloudinary_id);
+      return res.status(200).json({ msg: "Success deleting", deleting });
+    }
   } catch (e) {
     return res.status(400).json({ msg: "No Data Found" });
   }
