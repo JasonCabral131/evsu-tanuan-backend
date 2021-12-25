@@ -79,7 +79,6 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
       }
       return res.status(200).json({ msg: "Successfully Created", save });
     });
-    return res.status(200).json(savedJob);
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ msg: "Server Error login" });
