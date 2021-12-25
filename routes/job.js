@@ -188,7 +188,9 @@ router.post("/job-deleting-image/", async (req, res) => {
 
 router.get("/job-info/:id", async (req, res) => {
   try {
-    const job = await Job.findOne({ _id: req.params.id }).lean();
+    const job = await Job.findOne({ _id: req.params.id })
+      .populate("course.course")
+      .lean();
     if (job) {
       return res.status(200).json({ msg: "Job", job });
     }
