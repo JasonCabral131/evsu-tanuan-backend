@@ -187,7 +187,7 @@ router.post("/update-status-user", async (req, res) => {
     if (isExist) {
       const updating = await User.findOneAndUpdate(
         { _id: userId },
-        { $set: { status } }
+        { $set: { status: "active" } }
       );
       if (updating) {
         return res.status(200).json({ msg: "Successfully Updated Status" });
