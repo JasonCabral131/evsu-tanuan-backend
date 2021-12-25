@@ -165,7 +165,7 @@ router.delete("/:id", async (req, res) => {
 });
 router.post("/job-deleting-image/", async (req, res) => {
   try {
-    const { jobId, imageId } = req.body;
+    const { jobId, imageId, cloudinary_id } = req.body;
     const deleting = await Job.updateOne(
       { _id: jobId },
       {
@@ -176,7 +176,11 @@ router.post("/job-deleting-image/", async (req, res) => {
         },
       }
     );
-    return res.status(200).json({ msg: "Success deleting", deleting });
+    if (deleting) {
+      await cloudinary.uploader.destroy(cloudinary_id);
+      return res.status(200).json({ msg: "Success deleting", deleting });
+    }
+    return res.status(400).json({ msg: "No Data Found" });
   } catch (e) {
     return res.status(400).json({ msg: "No Data Found" });
   }
