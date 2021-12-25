@@ -3,21 +3,27 @@ const mongoose = require("mongoose");
 const UserSchema = mongoose.Schema({
   firstname: {
     type: String,
+    default: "",
   },
   middlename: {
     type: String,
+    default: "",
   },
   lastname: {
     type: String,
+    default: "",
   },
   sex: {
     type: String,
+    default: "",
   },
   dateOfBirth: {
     type: Date,
+    default: "",
   },
   placeOfBirth: {
     type: String,
+    default: "",
   },
   course: {
     type: mongoose.Schema.Types.ObjectId,
@@ -25,6 +31,7 @@ const UserSchema = mongoose.Schema({
   },
   yearGraduated: {
     type: String,
+    default: "",
   },
   presentOccupation: {
     type: String,
@@ -36,12 +43,15 @@ const UserSchema = mongoose.Schema({
   },
   phone: {
     type: String,
+    default: "",
   },
   email: {
     type: String,
+    default: "",
   },
   password: {
     type: String,
+    default: "",
   },
   profile: {
     url: { type: String, default: "" },
