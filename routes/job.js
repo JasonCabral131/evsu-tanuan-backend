@@ -12,10 +12,9 @@ const { sendingEmail } = require("./../middleware/common-middleware");
 // @desc      CREATE Job
 // @access    Private
 router.post("/", imageUpload.array("images"), async (req, res) => {
-  const { jobTitle, jobCompany, jobDescription, course, type } = req.body;
-
   // console.log(jobTitle, jobCompany, jobDescription, jobImage);
   try {
+    const { jobTitle, jobCompany, jobDescription, course, type } = req.body;
     const coursx = JSON.parse(course);
     let jobObject = {
       jobTitle,

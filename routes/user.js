@@ -4,6 +4,7 @@ const cloudinary = require("./../config/cloudinaryConfig");
 //Models
 const User = require("../Model/User");
 const { imageUpload } = require("./../middleware/common-middleware");
+const Notify = require("./../Model/notifier");
 // @route     GET api/user
 // @desc      FETCH User
 // @access    Private
