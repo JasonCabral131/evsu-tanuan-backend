@@ -163,7 +163,22 @@ router.put("/:id", imageUpload.array("images"), async (req, res) => {
     return res.status(500).json({ msg: "Server Error login" });
   }
 });
-
+router.post("/update-job-status", async (req, res) => {
+  try {
+    const { jobId } = req.body;
+    const updatedJob = await Job.updateOne(
+      { _id: jobId },
+      {
+        $set: {
+          status: "active",
+        },
+      }
+    );
+    return res.status(200).json({ msg: "Successfully Recovered", updatedJob });
+  } catch (e) {
+    return res.status(400).json({ msg: "Failed to Updated" });
+  }
+});
 // @route     DELETE api/job/:id
 // @desc      Delete Job
 // @access    Private
