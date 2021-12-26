@@ -112,9 +112,16 @@ router.post(
 
       const saving = await new User(userObject).save();
       if (saving) {
+        const savingNotify = await new Notify({
+          link: `/new-user-sign-up/${saving._id}`,
+          message: `New User has been sign up!, Check the information for approval => <Link>${
+            saving.firstname + " " + saving.lastname
+          }</Link`,
+          profile: `${saving.profile.url}`,
+        }).save();
         return res
           .status(200)
-          .json({ msg: "Successfully Created Sign in Now" });
+          .json({ msg: "Successfully Created Sign in Now", savingNotify });
       }
       return res.status(203).json({ msg: "Failed to Sign up Membership" });
     } catch (e) {

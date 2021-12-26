@@ -8,6 +8,9 @@ const notifier = new mongoose.Schema(
     message: {
       type: String,
     },
+    profile: {
+      type: String,
+    },
     viewed: {
       type: Boolean,
       enum: [true, false],
