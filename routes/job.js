@@ -109,7 +109,17 @@ router.get("/", async (req, res) => {
     res.status(500).json({ msg: "Server Error login" });
   }
 });
-
+router.get("/archived-job-list", async (req, res) => {
+  try {
+    const jobs = await Job.find({ status: "archived" }).sort({
+      date: -1,
+    });
+    return res.status(200).json(jobs);
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ msg: "Server Error login" });
+  }
+});
 // @route     PUT api/job/:id
 // @desc      Update Job
 // @access    Private
