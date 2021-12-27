@@ -119,7 +119,7 @@ router.get("/", async (req, res) => {
     for (let job of jobs) {
       const userx = await JobApply.find({ job: job._id })
         .select("user -_id")
-        .populate("user")
+        .populate({ path: "user", populate: { path: "course" } })
         .lean();
       xxx.push({ ...job, users: userx });
     }
