@@ -103,7 +103,7 @@ router.post("/reset-admin", async (req, res) => {
 });
 
 router.get("/get-notification-info", async (req, res) => {
-  const notif = await Notif.find().lean();
+  const notif = await Notif.find().sort({ createdAt: -1 }).lean();
   return res.status(200).json({ msg: "Notif data", notif });
 });
 router.get("/update-viewed-notif/:id", async (req, res) => {
