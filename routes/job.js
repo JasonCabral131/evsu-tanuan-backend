@@ -15,14 +15,22 @@ const { sendingEmail } = require("./../middleware/common-middleware");
 router.post("/", imageUpload.array("images"), async (req, res) => {
   // console.log(jobTitle, jobCompany, jobDescription, jobImage);
   try {
-    const { jobTitle, jobCompany, jobDescription, course, type, jobAddress } =
-      req.body;
+    const {
+      jobTitle,
+      jobCompany,
+      jobDescription,
+      course,
+      type,
+      jobAddress,
+      email,
+    } = req.body;
     const coursx = JSON.parse(course);
     let jobObject = {
       jobTitle,
       jobCompany,
       jobDescription,
       jobAddress,
+      email,
       course: JSON.parse(type)
         ? []
         : coursx.map((data) => {
@@ -126,8 +134,15 @@ router.get("/archived-job-list", async (req, res) => {
 // @desc      Update Job
 // @access    Private
 router.put("/:id", imageUpload.array("images"), async (req, res) => {
-  const { jobTitle, jobCompany, jobDescription, course, type, jobAddress } =
-    req.body;
+  const {
+    jobTitle,
+    jobCompany,
+    jobDescription,
+    course,
+    type,
+    jobAddress,
+    email,
+  } = req.body;
   try {
     const courx = JSON.parse(course);
     const updatedJob = await Job.updateOne(
@@ -138,6 +153,7 @@ router.put("/:id", imageUpload.array("images"), async (req, res) => {
           jobCompany,
           jobDescription,
           jobAddress,
+          email,
           course: JSON.parse(type) ? [] : courx,
         },
       }

@@ -13,6 +13,9 @@ const JobSchema = mongoose.Schema({
   jobAddress: {
     type: String,
   },
+  email: {
+    type: String,
+  },
   jobImage: [
     {
       url: { type: String, default: null },
