@@ -117,7 +117,10 @@ router.get("/", async (req, res) => {
       .lean();
     let xxx = [];
     for (let job of jobs) {
-      const userx = await JobApply.find({ job: job._id }).lean();
+      const userx = await JobApply.find({ job: job._id })
+        .select("user -_id")
+        .populate("user")
+        .lean();
       xxx.push({ ...job, users: userx });
     }
     return res.status(200).json(xxx);
