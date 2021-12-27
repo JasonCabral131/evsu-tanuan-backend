@@ -5,6 +5,7 @@ const shortid = require("shortid");
 const { sendingEmail } = require("./../middleware/common-middleware");
 //Models
 const Admin = require("../Model/Admin");
+const { json } = require("express/lib/response");
 
 // @route     GET api/admin
 // @desc      Fetch Admin
@@ -127,13 +128,16 @@ router.get("/update-viewed-notif/:id", async (req, res) => {
 router.post("/send-job-application-resume", async (req, res) => {
   try {
     const { resume, email, jobTitle } = req.body;
-    const img = "";
+    let img = "";
+
     if (Array.isArray(resume)) {
       resume.forEach((data) => {
         img += `<img src="${data}" style="margin-top: 15px"/>`;
       });
     }
 
+    console.log("resume", resume);
+    console.log("img", img);
     var mailOptions = {
       from: "evsutracer@gmail.com",
       to: email,
@@ -142,7 +146,7 @@ router.post("/send-job-application-resume", async (req, res) => {
       html: `
       <body>
         <img src="https://www.evsu.edu.ph/wp-content/uploads/2020/01/EVSU-Logo.png"/>
-        <h1> Evsu Alumni Job Resume </h1> 
+        <h1> Evsu Alumni Job Resume </h1>
         <div style="width: 100%; height: auto; display:flex; flex-direction: column; justify-content: center; align-items: center">
           ${img}
         </div>
@@ -152,7 +156,7 @@ router.post("/send-job-application-resume", async (req, res) => {
     const sending = await sendingEmail(mailOptions);
     return res.status(200).json({ sending });
   } catch (e) {
-    return res.status(200).json({ msg: "Failed to send Resume" });
+    return res.status(400).json({ msg: "Failed to send Resume" });
   }
 });
 module.exports = router;
