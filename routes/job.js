@@ -268,8 +268,9 @@ router.post("/apply-job-web", imageUpload.array("images"), async (req, res) => {
         const notifyAdmin = await new Notify({
           link: `/job-applicant-info/${job}/${user}`,
           message: `New Application Found => <Link style={{fontWeight: 'bolder', letterSpacing: 2}} to={${`/job-applicant-info/${job}/${user}`}}>${
-            user.firstname + " " + user.lastname
+            findUser.firstname + " " + findUser.lastname
           }</Link>`,
+          profile: `${findUser.profile.url}`,
         }).save();
         return res
           .status(200)
