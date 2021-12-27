@@ -105,7 +105,17 @@ router.get("/", async (req, res) => {
     res.status(500).json({ msg: "Server Error login" });
   }
 });
-
+router.get("/archived-event", async (req, res) => {
+  try {
+    const events = await Event.find({ status: "archived" }).sort({
+      date: -1,
+    });
+    res.status(200).json(events);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ msg: "Server Error login" });
+  }
+});
 // @route     PUT api/event/:id
 // @desc      Updat Event
 // @access    Private
