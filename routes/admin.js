@@ -106,4 +106,19 @@ router.get("/get-notification-info", async (req, res) => {
   const notif = await Notif.find().lean();
   return res.status(200).json({ msg: "Notif data", notif });
 });
+router.get("/update-viewed-notif/:id", async (req, res) => {
+  try {
+    const updating = await Notif.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        $set: {
+          viewed: true,
+        },
+      }
+    );
+    return res.status(200).json(updating);
+  } catch (e) {
+    return res.status(400).json({ msg: "failed" });
+  }
+});
 module.exports = router;

@@ -316,6 +316,7 @@ router.get("/get-job-apply-info/:id", async (req, res) => {
     const jobApp = await JobApply.findOne({ _id: req.params.id })
       .populate("user")
       .populate("job")
+      .sort({ createdAt: -1 })
       .lean();
     if (jobApp) {
       return res.status(200).json({ msg: "Data", jobApp });
@@ -326,4 +327,5 @@ router.get("/get-job-apply-info/:id", async (req, res) => {
     return res.status(400).json({ msg: "No Data Found" });
   }
 });
+
 module.exports = router;
