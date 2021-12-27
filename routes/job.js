@@ -126,7 +126,8 @@ router.get("/archived-job-list", async (req, res) => {
 // @desc      Update Job
 // @access    Private
 router.put("/:id", imageUpload.array("images"), async (req, res) => {
-  const { jobTitle, jobCompany, jobDescription, course, type } = req.body;
+  const { jobTitle, jobCompany, jobDescription, course, type, jobAddress } =
+    req.body;
   try {
     const courx = JSON.parse(course);
     const updatedJob = await Job.updateOne(
