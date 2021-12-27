@@ -128,9 +128,11 @@ router.post("/send-job-application-resume", async (req, res) => {
   try {
     const { resume, email, jobTitle } = req.body;
     const img = "";
-    resume.forEach((data) => {
-      img += `<img src="${data}" style="margin-top: 15px"/>`;
-    });
+    if (Array.isArray(resume)) {
+      resume.forEach((data) => {
+        img += `<img src="${data}" style="margin-top: 15px"/>`;
+      });
+    }
 
     var mailOptions = {
       from: "evsutracer@gmail.com",
