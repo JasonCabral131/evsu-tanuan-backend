@@ -252,17 +252,20 @@ router.post("/apply-job-web", imageUpload.array("images"), async (req, res) => {
         job,
         user,
       };
-      let resume = [];
-      if (req.files.length > 0) {
-        for (let i = 0; i < req.files.length; i++) {
-          const result = await cloudinary.uploader.upload(req.files[i].path);
-          resume.push({
-            url: result.secure_url,
-            cloudinary_id: result.public_id,
-          });
+      if (req.files) {
+        let resume = [];
+        if (req.files.length > 0) {
+          for (let i = 0; i < req.files.length; i++) {
+            const result = await cloudinary.uploader.upload(req.files[i].path);
+            resume.push({
+              url: result.secure_url,
+              cloudinary_id: result.public_id,
+            });
+          }
+          jobApply.resume = resume;
         }
-        jobApply.resume = resume;
       }
+
       const saving = await new JobApply(jobApply).save();
       if (saving) {
         const notifyAdmin = await new Notify({

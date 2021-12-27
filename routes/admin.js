@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const Notif = require("./../Model/notifier");
 const shortid = require("shortid");
 const { sendingEmail } = require("./../middleware/common-middleware");
 //Models
@@ -102,4 +102,8 @@ router.post("/reset-admin", async (req, res) => {
   }
 });
 
+router.get("/get-notification-info", async (req, res) => {
+  const notif = await Notif.find().lean();
+  return res.status(200).json({ msg: "Notif data", notif });
+});
 module.exports = router;
