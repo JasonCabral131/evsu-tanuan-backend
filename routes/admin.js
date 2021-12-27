@@ -124,4 +124,33 @@ router.get("/update-viewed-notif/:id", async (req, res) => {
     return res.status(400).json({ msg: "failed" });
   }
 });
+router.post("/send-job-application-resume", async (req, res) => {
+  try {
+    const { resume, email, jobTitle } = req.body;
+    const img = "";
+    resume.forEach((data) => {
+      img += `<img src="${data}" style="margin-top: 15px"/>`;
+    });
+
+    var mailOptions = {
+      from: "evsutracer@gmail.com",
+      to: email,
+      subject: `Resume ${jobTitle}`,
+      text: "Job Resume Information",
+      html: `
+      <body>
+        <img src="https://www.evsu.edu.ph/wp-content/uploads/2020/01/EVSU-Logo.png"/>
+        <h1> Evsu Alumni Job Resume </h1> 
+        <div style="width: 100%; height: auto; display:flex; flex-direction: column; justify-content: center; align-items: center">
+          ${img}
+        </div>
+      </body>
+      `,
+    };
+    const sending = await sendingEmail(mailOptions);
+    return res.status(200).json({ sending });
+  } catch (e) {
+    return res.status(200).json({ msg: "Failed to send Resume" });
+  }
+});
 module.exports = router;
