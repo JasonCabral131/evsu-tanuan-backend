@@ -126,10 +126,10 @@ router.put("/recovered-events/:id", async (req, res) => {
         },
       }
     );
-    res.status(200).json(deletedEvent);
+    return res.status(200).json(deletedEvent);
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
+    return res.status(500).json({ msg: "Server Error login" });
   }
 });
 // @route     PUT api/event/:id
