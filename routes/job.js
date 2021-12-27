@@ -110,13 +110,20 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
 // @access    Private
 router.get("/", async (req, res) => {
   try {
-    const jobs = await Job.find({ status: "active" }).sort({
-      date: -1,
-    });
-    res.status(200).json(jobs);
+    const jobs = await Job.find({ status: "active" })
+      .sort({
+        date: -1,
+      })
+      .lean();
+    let xxx = [];
+    for (let job of jobs) {
+      const userx = await JobApply.find({ job: job._id }).lean();
+      xxx.push({ ...job, users: userx });
+    }
+    return res.status(200).json(xxx);
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
+    return res.status(500).json({ msg: "Server Error login" });
   }
 });
 router.get("/archived-job-list", async (req, res) => {
