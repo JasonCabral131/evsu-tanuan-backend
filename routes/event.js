@@ -8,7 +8,9 @@ const moment = require("moment");
 //Models
 const Event = require("../Model/Event");
 const User = require("./../Model/User");
-
+const NotifyUser = require("./../Model/notify-users");
+const NotifyAdmin = require("./../Model/notifier");
+const EventAttendace = require("./../Model/EventAttending");
 // @route     POST api/event
 // @desc      CREATE Event
 // @access    Private
@@ -79,9 +81,18 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
               `,
         };
         const sending = await sendingEmail(mailOptions);
+        const sendNotify = await new NotifyUser({
+          link: `/event-information-to-attend/${save._id}`,
+          message: `You Are Invited to Attend this event!, check it now!! => <Link to={${`/event-information-to-attend/${save._id}`}} style={{fontWeight: 'bolder', letterSpacing: 2}}>${eventTitle}</Link>`,
+          course: JSON.parse(type)
+            ? []
+            : coursx.map((data) => {
+                return { course: data };
+              }),
+        }).save();
         return res
           .status(200)
-          .json({ msg: "Successfully Created", save, sending });
+          .json({ msg: "Successfully Created", save, sending, sendNotify });
       }
       return res.status(200).json({ msg: "Successfully Created", save });
     });
@@ -233,5 +244,36 @@ router.get("/event-info/:id", async (req, res) => {
     return res.status(400).json({ msg: "No Data Found" });
   }
 });
-
+router.post("/attend-event/", async (req, res) => {
+  try {
+    const { event, user } = req.body;
+    const isAlreadyAttended = await EventAttendace.findOne({
+      event,
+      user,
+    }).lean();
+    if (isAlreadyAttended) {
+      return res.status(400).json({ msg: "Failed to Submit Data" });
+    }
+    const isEventExist = await Event.findOne({ _id: event }).lean();
+    if (isEventExist) {
+      return res.status(400).json({ msg: "Failed to Submit Data" });
+    }
+    const isUserExist = await User.findOne({ _id: user }).lean();
+    if (isUserExist) {
+      return res.status(400).json({ msg: "Failed to Submit Data" });
+    }
+    const save = await new EventAttendace({ event, user }).save();
+    if (save) {
+      await new NotifyAdmin({
+        link: `/new-user-attending-event/${save._id}`,
+        message: `<span style={{ fontWeight: "bold" }}>${isUserExist.firstname} </span> has Attending the Event ( ${isEventExist.eventTitle} )`,
+        profile: `${isUserExist.profile.url}`,
+      }).save();
+      return res.status(200).json({ msg: "Successfully Submitted", save });
+    }
+    return res.status(400).json({ msg: "Failed to Submit Data" });
+  } catch (e) {
+    return res.status(400).json({ msg: "Failed to Submit Data" });
+  }
+});
 module.exports = router;
