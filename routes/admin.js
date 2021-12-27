@@ -114,6 +114,9 @@ router.get("/update-viewed-notif/:id", async (req, res) => {
         $set: {
           viewed: true,
         },
+      },
+      {
+        upsert: true,
       }
     );
     return res.status(200).json(updating);
