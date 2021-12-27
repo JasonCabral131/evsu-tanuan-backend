@@ -15,12 +15,14 @@ const { sendingEmail } = require("./../middleware/common-middleware");
 router.post("/", imageUpload.array("images"), async (req, res) => {
   // console.log(jobTitle, jobCompany, jobDescription, jobImage);
   try {
-    const { jobTitle, jobCompany, jobDescription, course, type } = req.body;
+    const { jobTitle, jobCompany, jobDescription, course, type, jobAddress } =
+      req.body;
     const coursx = JSON.parse(course);
     let jobObject = {
       jobTitle,
       jobCompany,
       jobDescription,
+      jobAddress,
       course: JSON.parse(type)
         ? []
         : coursx.map((data) => {
@@ -134,6 +136,7 @@ router.put("/:id", imageUpload.array("images"), async (req, res) => {
           jobTitle,
           jobCompany,
           jobDescription,
+          jobAddress,
           course: JSON.parse(type) ? [] : courx,
         },
       }

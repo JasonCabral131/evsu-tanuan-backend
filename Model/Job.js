@@ -10,6 +10,9 @@ const JobSchema = mongoose.Schema({
   jobDescription: {
     type: String,
   },
+  jobAddress: {
+    type: String,
+  },
   jobImage: [
     {
       url: { type: String, default: null },

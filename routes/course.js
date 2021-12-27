@@ -18,7 +18,10 @@ router.get("/", async (req, res) => {
       .lean();
     let courses = [];
     for (let courseList of courseLists) {
-      const users = await User.find({ course: courseList._id })
+      const users = await User.find({
+        course: courseList._id,
+        status: "active",
+      })
         .select("-status -password")
         .lean();
       courses.push({ ...courseList, users });
