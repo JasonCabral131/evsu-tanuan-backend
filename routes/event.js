@@ -116,6 +116,22 @@ router.get("/archived-event", async (req, res) => {
     res.status(500).json({ msg: "Server Error login" });
   }
 });
+router.put("/recovered-events/:id", async (req, res) => {
+  try {
+    const deletedEvent = await Event.updateOne(
+      { _id: req.params.id },
+      {
+        $set: {
+          status: "active",
+        },
+      }
+    );
+    res.status(200).json(deletedEvent);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ msg: "Server Error login" });
+  }
+});
 // @route     PUT api/event/:id
 // @desc      Updat Event
 // @access    Private
