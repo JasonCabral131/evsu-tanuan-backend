@@ -293,4 +293,16 @@ router.post("/apply-job-web", imageUpload.array("images"), async (req, res) => {
     return res.status(400).json({ msg: "Failed to Apply" });
   }
 });
+
+router.get("/get-job-apply-info/:id", async (req, res) => {
+  const jobApp = await JobApply.findOne({ _id: req.params.id })
+    .populate("user")
+    .populate("job")
+    .lean();
+  if (notif) {
+    return res.status(200).json({ msg: "Data", jobApp });
+  } else {
+    return res.status(400).json({ msg: "No Data Found" });
+  }
+});
 module.exports = router;
