@@ -255,11 +255,11 @@ router.post("/attend-event/", async (req, res) => {
       return res.status(400).json({ msg: "Failed to Submit Data" });
     }
     const isEventExist = await Event.findOne({ _id: event }).lean();
-    if (isEventExist) {
+    if (!isEventExist) {
       return res.status(400).json({ msg: "Failed to Submit Data" });
     }
     const isUserExist = await User.findOne({ _id: user }).lean();
-    if (isUserExist) {
+    if (!isUserExist) {
       return res.status(400).json({ msg: "Failed to Submit Data" });
     }
     const save = await new EventAttendace({ event, user }).save();

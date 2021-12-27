@@ -244,6 +244,10 @@ router.post("/apply-job-web", imageUpload.array("images"), async (req, res) => {
     const { job, user } = req.body;
     const findUser = await User.findOne({ _id: user }).lean();
     const apply = await JobApply.findOne({ job, user }).lean();
+    const findJob = await Job.findOne({ _id: job }).lean();
+    if (!findJob) {
+      return res.status(400).json({ msg: "Failed to Apply" });
+    }
     if (findUser) {
       if (apply) {
         return res.status(400).json({ msg: "You Already Apply for Job" });
@@ -269,8 +273,10 @@ router.post("/apply-job-web", imageUpload.array("images"), async (req, res) => {
       const saving = await new JobApply(jobApply).save();
       if (saving) {
         const notifyAdmin = await new Notify({
-          link: `/job-applicant-info/${job}/${user}`,
-          message: `New Application Found => <Link style={{fontWeight: 'bolder', letterSpacing: 2}} to={${`/job-applicant-info/${job}/${user}`}}>${
+          link: `/job-applicant-info/${saving._id}`,
+          message: `New Application Found in ( ${
+            findJob.jobTitle
+          } ) => <Link style={{fontWeight: 'bolder', letterSpacing: 2}} to={${`/job-applicant-info/${saving._id}`}}>${
             findUser.firstname + " " + findUser.lastname
           }</Link>`,
           profile: `${findUser.profile.url}`,
