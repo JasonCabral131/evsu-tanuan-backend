@@ -116,7 +116,7 @@ router.get("/archived-event", async (req, res) => {
     res.status(500).json({ msg: "Server Error login" });
   }
 });
-router.put("/recovered-events/:id", async (req, res) => {
+router.get("/recovered-events/:id", async (req, res) => {
   try {
     const deletedEvent = await Event.updateOne(
       { _id: req.params.id },
