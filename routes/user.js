@@ -131,7 +131,18 @@ router.post(
     }
   }
 );
-
+router.get("/get-user-information/:id", async (req, res) => {
+  try {
+    const info = await User.findOne({ _id: req.params.id }).lean();
+    if (info) {
+      return res.status(200).json(info);
+    } else {
+      return res.status(400).json({ msg: "failed to get User Information" });
+    }
+  } catch (e) {
+    return res.status(400).json({ msg: "failed to get User Information" });
+  }
+});
 router.post("/sign-up-mobile", async (req, res) => {
   try {
     const {
