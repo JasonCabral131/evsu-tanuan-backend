@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const cloudinary = require("./../config/cloudinaryConfig");
+const mongoose = require("mongoose");
 const {
   imageUpload,
   sendingEmail,
@@ -107,13 +108,25 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
 // @access    Private
 router.get("/", async (req, res) => {
   try {
-    const events = await Event.find({ status: "active" }).sort({
-      date: -1,
-    });
-    res.status(200).json(events);
+    const events = await Event.find({ status: "active" })
+      .sort({
+        date: -1,
+      })
+      .lean();
+
+    let xx = [];
+    for (let event of events) {
+      const attending = await EventAttendace.find({ event: event._id })
+        .select("user  -_id")
+        .populate({ path: "user", populate: { path: "course" } })
+        .lean();
+      xx.push({ ...event, users: attending });
+    }
+
+    return res.status(200).json(xx);
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
+    return res.status(500).json({ msg: "Server Error login" });
   }
 });
 router.get("/archived-event", async (req, res) => {
