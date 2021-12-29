@@ -2,14 +2,14 @@ const router = require("express").Router();
 
 //Models
 const Course = require("../Model/Course");
-
+const auth = require("./../middleware/auth");
 // Mock Data
 const coursesMock = require("../mock/course");
 const User = require("./../Model/User");
 // @route     GET api/course
 // @desc      FETCH Course
 // @access    Private
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     const courseLists = await Course.find({ status: "active" })
       .sort({
@@ -36,7 +36,7 @@ router.get("/", async (req, res) => {
 // @route     POST api/course
 // @desc      Create Course
 // @access    Private
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   const { courseName, courseAbbreviation } = req.body;
   try {
     const newCourse = new Course({
@@ -50,7 +50,7 @@ router.post("/", async (req, res) => {
     return res.status(500).json({ msg: "Server Error login" });
   }
 });
-router.get("/get-archived", async (req, res) => {
+router.get("/get-archived", auth, async (req, res) => {
   try {
     const courseLists = await Course.find({ status: "archived" })
       .sort({
@@ -74,7 +74,7 @@ router.get("/get-archived", async (req, res) => {
 // @route     Delete api/course/:id
 // @desc      Delete Course
 // @access    Private
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   try {
     const deletedCourse = await Course.updateOne(
       { _id: req.params.id },
@@ -94,7 +94,7 @@ router.delete("/:id", async (req, res) => {
 // @route     Update api/course/:id
 // @desc      Update Course
 // @access    Private
-router.put("/:id", async (req, res) => {
+router.put("/:id", auth, async (req, res) => {
   const { courseName, courseAbbreviation } = req.body;
   try {
     const isExist = await Course.findOne({
@@ -119,7 +119,7 @@ router.put("/:id", async (req, res) => {
     return res.status(500).json({ msg: "Server Error login" });
   }
 });
-router.post("/course-to-active", async (req, res) => {
+router.post("/course-to-active", auth, async (req, res) => {
   try {
     const { course_id } = req.body;
     const updating = await Course.updateOne(
@@ -139,7 +139,7 @@ router.post("/course-to-active", async (req, res) => {
 // @route     PUT api/course/addUser/:id
 // @desc      Add User to Course
 // @access    Private
-router.put("/addUser/:id", async (req, res) => {
+router.put("/addUser/:id", auth, async (req, res) => {
   // Get User Schema IDs
   const users = req.body.users;
 
@@ -159,7 +159,7 @@ router.put("/addUser/:id", async (req, res) => {
   }
 });
 
-router.get("/course-info/:id", async (req, res) => {
+router.get("/course-info/:id", auth, async (req, res) => {
   try {
     const courseLists = await Course.find({ _id: req.params.id }).lean();
     return res.status(200).json({ msg: "Course", courseLists });
@@ -171,7 +171,7 @@ router.get("/course-info/:id", async (req, res) => {
 // @route     POST api/course/insertMany
 // @desc      ADD ALL Courses
 // @access    Private
-router.post("/insertMany", async (req, res) => {
+router.post("/insertMany", auth, async (req, res) => {
   try {
     const hasUsed = await Course.find().lean();
     if (hasUsed.length > 0) {

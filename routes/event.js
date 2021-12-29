@@ -12,10 +12,11 @@ const User = require("./../Model/User");
 const NotifyUser = require("./../Model/notify-users");
 const NotifyAdmin = require("./../Model/notifier");
 const EventAttendace = require("./../Model/EventAttending");
+const auth = require("./../middleware/auth");
 // @route     POST api/event
 // @desc      CREATE Event
 // @access    Private
-router.post("/", imageUpload.array("images"), async (req, res) => {
+router.post("/", auth, imageUpload.array("images"), async (req, res) => {
   const { eventSchedule, eventTitle, eventDescription, course, type } =
     req.body;
 
@@ -106,7 +107,7 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
 // @route     GET api/event
 // @desc      FETCH Events
 // @access    Private
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     const events = await Event.find({ status: "active" })
       .sort({
@@ -129,7 +130,7 @@ router.get("/", async (req, res) => {
     return res.status(500).json({ msg: "Server Error login" });
   }
 });
-router.get("/archived-event", async (req, res) => {
+router.get("/archived-event", auth, async (req, res) => {
   try {
     const events = await Event.find({ status: "archived" }).sort({
       date: -1,
@@ -140,7 +141,7 @@ router.get("/archived-event", async (req, res) => {
     res.status(500).json({ msg: "Server Error login" });
   }
 });
-router.get("/recovered-events/:id", async (req, res) => {
+router.get("/recovered-events/:id", auth, async (req, res) => {
   try {
     const deletedEvent = await Event.updateOne(
       { _id: req.params.id },
@@ -159,7 +160,7 @@ router.get("/recovered-events/:id", async (req, res) => {
 // @route     PUT api/event/:id
 // @desc      Updat Event
 // @access    Private
-router.put("/:id", imageUpload.array("images"), async (req, res) => {
+router.put("/:id", auth, imageUpload.array("images"), async (req, res) => {
   const { eventTitle, eventDescription, eventSchedule, course, type } =
     req.body;
   // eventSchedule
@@ -205,7 +206,7 @@ router.put("/:id", imageUpload.array("images"), async (req, res) => {
 // @route     Delete api/event/:id
 // @desc      Delete Event
 // @access    Private
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   try {
     const deletedEvent = await Event.updateOne(
       { _id: req.params.id },
@@ -221,7 +222,7 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ msg: "Server Error login" });
   }
 });
-router.post("/event-deleting-image/", async (req, res) => {
+router.post("/event-deleting-image/", auth, async (req, res) => {
   try {
     const { eventId, imageId, cloudinary_id } = req.body;
     const deleting = await Event.updateOne(
@@ -243,7 +244,7 @@ router.post("/event-deleting-image/", async (req, res) => {
   }
 });
 
-router.get("/event-info/:id", async (req, res) => {
+router.get("/event-info/:id", auth, async (req, res) => {
   try {
     const event = await Event.findOne({ _id: req.params.id })
       .populate("course.course")
@@ -257,7 +258,7 @@ router.get("/event-info/:id", async (req, res) => {
     return res.status(400).json({ msg: "No Data Found" });
   }
 });
-router.post("/attend-event/", async (req, res) => {
+router.post("/attend-event/", auth, async (req, res) => {
   try {
     const { event, user } = req.body;
     const isAlreadyAttended = await EventAttendace.findOne({
@@ -289,7 +290,7 @@ router.post("/attend-event/", async (req, res) => {
     return res.status(400).json({ msg: "Failed to Submit Data" });
   }
 });
-router.post("/user-attend-event-info", async (req, res) => {
+router.post("/user-attend-event-info", auth, async (req, res) => {
   try {
     const { atttendId } = req.body;
     const attendInfo = await EventAttendace.findOne({ _id: atttendId })

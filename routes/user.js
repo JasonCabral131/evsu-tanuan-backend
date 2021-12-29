@@ -13,7 +13,7 @@ const NotifyUser = require("./../Model/notify-users");
 // @route     GET api/user
 // @desc      FETCH User
 // @access    Private
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     const users = await User.find({ status: "active" })
       .populate("course", "courseName")
@@ -26,7 +26,7 @@ router.get("/", async (req, res) => {
     res.status(500).json({ msg: "Server Error login" });
   }
 });
-router.get("/pending-user", async (req, res) => {
+router.get("/pending-user", auth, async (req, res) => {
   try {
     const users = await User.find({ status: "pending" })
       .populate("course", "courseName")
@@ -39,7 +39,7 @@ router.get("/pending-user", async (req, res) => {
     res.status(500).json({ msg: "Server Error login" });
   }
 });
-router.get("/archived-user", async (req, res) => {
+router.get("/archived-user", auth, async (req, res) => {
   try {
     const users = await User.find({ status: "archived" })
       .populate("course", "courseName")
@@ -52,7 +52,7 @@ router.get("/archived-user", async (req, res) => {
     res.status(500).json({ msg: "Server Error login" });
   }
 });
-router.get("/banned-user", async (req, res) => {
+router.get("/banned-user", auth, async (req, res) => {
   try {
     const users = await User.find({ status: "banned" })
       .populate("course", "courseName")
@@ -136,7 +136,7 @@ router.post(
     }
   }
 );
-router.get("/get-user-information/:id", async (req, res) => {
+router.get("/get-user-information/:id", auth, async (req, res) => {
   try {
     const info = await User.findOne({ _id: req.params.id })
       .populate("course", "courseName")
@@ -209,7 +209,7 @@ router.post("/sign-up-mobile", async (req, res) => {
   }
 });
 
-router.post("/update-status-user", async (req, res) => {
+router.post("/update-status-user", auth, async (req, res) => {
   try {
     const { userId, status } = req.body;
     const isExist = await User.findOne({ _id: userId }).lean();
@@ -229,7 +229,7 @@ router.post("/update-status-user", async (req, res) => {
     return res.status(400).json({ msg: "Failed to Update" });
   }
 });
-router.post("/deleting-pending-request", async (req, res) => {
+router.post("/deleting-pending-request", auth, async (req, res) => {
   try {
     const { userId, cloudinary_id } = req.body;
     const isActive = await User.findOne({
@@ -253,7 +253,7 @@ router.post("/deleting-pending-request", async (req, res) => {
 // @route     PUT api/user/:id
 // @desc      Update User Account
 // @access    Private
-router.put("/:id", async (req, res) => {
+router.put("/:id", auth, async (req, res) => {
   const {
     firstname,
     lastname,

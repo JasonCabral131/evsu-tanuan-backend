@@ -6,11 +6,11 @@ const { sendingEmail } = require("./../middleware/common-middleware");
 //Models
 const Admin = require("../Model/Admin");
 const { json } = require("express/lib/response");
-
+const auth = require("./../middleware/auth");
 // @route     GET api/admin
 // @desc      Fetch Admin
 // @access    Private
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     const admins = await Admin.find();
     res.status(200).json(admins);
@@ -23,7 +23,7 @@ router.get("/", async (req, res) => {
 // @route     POST api/admin
 // @desc      Create Admin
 // @access    Private
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   const { userName, email, phoneNumber, password } = req.body;
 
   // Check if Admin Email is already taken
@@ -103,11 +103,11 @@ router.post("/reset-admin", async (req, res) => {
   }
 });
 
-router.get("/get-notification-info", async (req, res) => {
+router.get("/get-notification-info", auth, async (req, res) => {
   const notif = await Notif.find().sort({ createdAt: -1 }).lean();
   return res.status(200).json({ msg: "Notif data", notif });
 });
-router.get("/update-viewed-notif/:id", async (req, res) => {
+router.get("/update-viewed-notif/:id", auth, async (req, res) => {
   try {
     const updating = await Notif.findOneAndUpdate(
       { _id: req.params.id },
@@ -125,7 +125,7 @@ router.get("/update-viewed-notif/:id", async (req, res) => {
     return res.status(400).json({ msg: "failed" });
   }
 });
-router.post("/send-job-application-resume", async (req, res) => {
+router.post("/send-job-application-resume", auth, async (req, res) => {
   try {
     const { resume, email, jobTitle } = req.body;
     let img = "";

@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const cloudinary = require("./../config/cloudinaryConfig");
-
+const auth = require("./../middleware/auth");
 const { imageUpload } = require("./../middleware/common-middleware");
 //Models
 const Job = require("../Model/Job");
@@ -12,7 +12,7 @@ const { sendingEmail } = require("./../middleware/common-middleware");
 // @route     POST api/job
 // @desc      CREATE Job
 // @access    Private
-router.post("/", imageUpload.array("images"), async (req, res) => {
+router.post("/", auth, imageUpload.array("images"), async (req, res) => {
   // console.log(jobTitle, jobCompany, jobDescription, jobImage);
   try {
     const {
@@ -108,7 +108,7 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
 // @route     GET api/job
 // @desc      FETCH Jobs
 // @access    Private
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     const jobs = await Job.find({ status: "active" })
       .sort({
@@ -129,7 +129,7 @@ router.get("/", async (req, res) => {
     return res.status(500).json({ msg: "Server Error login" });
   }
 });
-router.get("/archived-job-list", async (req, res) => {
+router.get("/archived-job-list", auth, async (req, res) => {
   try {
     const jobs = await Job.find({ status: "archived" }).sort({
       date: -1,
@@ -143,7 +143,7 @@ router.get("/archived-job-list", async (req, res) => {
 // @route     PUT api/job/:id
 // @desc      Update Job
 // @access    Private
-router.put("/:id", imageUpload.array("images"), async (req, res) => {
+router.put("/:id", auth, imageUpload.array("images"), async (req, res) => {
   const {
     jobTitle,
     jobCompany,
@@ -193,7 +193,7 @@ router.put("/:id", imageUpload.array("images"), async (req, res) => {
     return res.status(500).json({ msg: "Server Error login" });
   }
 });
-router.post("/update-job-status", async (req, res) => {
+router.post("/update-job-status", auth, async (req, res) => {
   try {
     const { jobId } = req.body;
     const updatedJob = await Job.updateOne(
@@ -212,7 +212,7 @@ router.post("/update-job-status", async (req, res) => {
 // @route     DELETE api/job/:id
 // @desc      Delete Job
 // @access    Private
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   try {
     const deletedEvent = await Job.updateOne(
       { _id: req.params.id },
@@ -228,7 +228,7 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ msg: "Server Error login" });
   }
 });
-router.post("/job-deleting-image/", async (req, res) => {
+router.post("/job-deleting-image/", auth, async (req, res) => {
   try {
     const { jobId, imageId, cloudinary_id } = req.body;
     const deleting = await Job.updateOne(
@@ -251,7 +251,7 @@ router.post("/job-deleting-image/", async (req, res) => {
   }
 });
 
-router.get("/job-info/:id", async (req, res) => {
+router.get("/job-info/:id", auth, async (req, res) => {
   try {
     const job = await Job.findOne({ _id: req.params.id })
       .populate("course.course")
@@ -265,62 +265,69 @@ router.get("/job-info/:id", async (req, res) => {
   }
 });
 
-router.post("/apply-job-web", imageUpload.array("images"), async (req, res) => {
-  try {
-    const { job, user } = req.body;
-    const findUser = await User.findOne({ _id: user }).lean();
-    const apply = await JobApply.findOne({ job, user }).lean();
-    const findJob = await Job.findOne({ _id: job }).lean();
-    if (!findJob) {
-      return res.status(400).json({ msg: "Failed to Apply" });
-    }
-    if (findUser) {
-      if (apply) {
-        return res.status(400).json({ msg: "You Already Apply for Job" });
+router.post(
+  "/apply-job-web",
+  auth,
+  imageUpload.array("images"),
+  async (req, res) => {
+    try {
+      const { job, user } = req.body;
+      const findUser = await User.findOne({ _id: user }).lean();
+      const apply = await JobApply.findOne({ job, user }).lean();
+      const findJob = await Job.findOne({ _id: job }).lean();
+      if (!findJob) {
+        return res.status(400).json({ msg: "Failed to Apply" });
       }
-      let jobApply = {
-        job,
-        user,
-      };
-      if (req.files) {
-        let resume = [];
-        if (req.files.length > 0) {
-          for (let i = 0; i < req.files.length; i++) {
-            const result = await cloudinary.uploader.upload(req.files[i].path);
-            resume.push({
-              url: result.secure_url,
-              cloudinary_id: result.public_id,
-            });
-          }
-          jobApply.resume = resume;
+      if (findUser) {
+        if (apply) {
+          return res.status(400).json({ msg: "You Already Apply for Job" });
         }
-      }
+        let jobApply = {
+          job,
+          user,
+        };
+        if (req.files) {
+          let resume = [];
+          if (req.files.length > 0) {
+            for (let i = 0; i < req.files.length; i++) {
+              const result = await cloudinary.uploader.upload(
+                req.files[i].path
+              );
+              resume.push({
+                url: result.secure_url,
+                cloudinary_id: result.public_id,
+              });
+            }
+            jobApply.resume = resume;
+          }
+        }
 
-      const saving = await new JobApply(jobApply).save();
-      if (saving) {
-        const notifyAdmin = await new Notify({
-          link: `/job-applicant-info/${saving._id}`,
-          message: `New Application Found in ( ${
-            findJob.jobTitle
-          } ) => <Link style={{fontWeight: 'bolder', letterSpacing: 2}} to={${`/job-applicant-info/${saving._id}`}}>${
-            findUser.firstname + " " + findUser.lastname
-          }</Link>`,
-          profile: `${findUser.profile.url}`,
-        }).save();
-        return res
-          .status(200)
-          .json({ msg: "Applied Successfully", saving, notifyAdmin });
+        const saving = await new JobApply(jobApply).save();
+        if (saving) {
+          const notifyAdmin = await new Notify({
+            link: `/job-applicant-info/${saving._id}`,
+            message: `New Application Found in ( ${
+              findJob.jobTitle
+            } ) => <Link style={{fontWeight: 'bolder', letterSpacing: 2}} to={${`/job-applicant-info/${saving._id}`}}>${
+              findUser.firstname + " " + findUser.lastname
+            }</Link>`,
+            profile: `${findUser.profile.url}`,
+          }).save();
+          return res
+            .status(200)
+            .json({ msg: "Applied Successfully", saving, notifyAdmin });
+        }
+        return res.status(400).json({ msg: "Failed to Apply" });
+      } else {
+        return res.status(400).json({ msg: "Failed to Apply" });
       }
-      return res.status(400).json({ msg: "Failed to Apply" });
-    } else {
+    } catch (e) {
       return res.status(400).json({ msg: "Failed to Apply" });
     }
-  } catch (e) {
-    return res.status(400).json({ msg: "Failed to Apply" });
   }
-});
+);
 
-router.get("/get-job-apply-info/:id", async (req, res) => {
+router.get("/get-job-apply-info/:id", auth, async (req, res) => {
   try {
     console.log(req.params.id);
     const jobApp = await JobApply.findOne({ _id: req.params.id })
