@@ -409,17 +409,15 @@ router.post("/get-job-information-to-apply", auth, async (req, res) => {
         job: jobId,
         user: userId,
       }).lean();
-      return res
-        .status(400)
-        .json({
-          msg: "Job Information",
-          job: { ...ifJobExist, applied: isJobAlreadyApplied ? true : false },
-        });
+      return res.status(200).json({
+        msg: "Job Information",
+        job: { ...ifJobExist, applied: isJobAlreadyApplied ? true : false },
+      });
     } else {
-      return res.status(200).json({ msg: "Failed to get Job Details" });
+      return res.status(400).json({ msg: "Failed to get Job Details" });
     }
   } catch (e) {
-    return res.status(200).json({ msg: "Failed to get Job Details" });
+    return res.status(400).json({ msg: "Failed to get Job Details" });
   }
 });
 module.exports = router;
