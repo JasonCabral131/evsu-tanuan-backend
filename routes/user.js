@@ -9,6 +9,7 @@ const Notify = require("./../Model/notifier");
 const Job = require("./../Model/Job");
 const JobApply = require("./../Model/JobApply");
 const Event = require("./..//Model/Event");
+const EventAttend = require("./../Model/EventAttending");
 const NotifyUser = require("./../Model/notify-users");
 // @route     GET api/user
 // @desc      FETCH User
@@ -418,6 +419,31 @@ router.post("/get-job-information-to-apply", auth, async (req, res) => {
     }
   } catch (e) {
     return res.status(400).json({ msg: "Failed to get Job Details" });
+  }
+});
+router.post("/get-event-information-to-attend", async (req, res) => {
+  try {
+    const { eventId, userId } = req.body;
+    const isEventExist = await Event.findOne({ _id: eventId }).lean();
+    if (isEventExist) {
+      const attendings = await EventAttend.find({ event: isEventExist._id })
+        .populate("user", "-password")
+        .lean();
+      let users = [];
+      for (let attending of attendings) {
+        users.push({ ...attending.user });
+      }
+      return res
+        .status(200)
+        .json({
+          msg: "Event Information",
+          eventInfo: { ...isEventExist, attending: users },
+        });
+    } else {
+      return res.status(400).json({ msg: "Failed to get Event Information" });
+    }
+  } catch (e) {
+    return res.status(400).json({ msg: "Failed to get Event Information" });
   }
 });
 module.exports = router;
