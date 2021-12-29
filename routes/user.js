@@ -5,6 +5,9 @@ const cloudinary = require("./../config/cloudinaryConfig");
 const User = require("../Model/User");
 const { imageUpload } = require("./../middleware/common-middleware");
 const Notify = require("./../Model/notifier");
+const Job = require("./../Model/Job");
+const Event = require("./..//Model/Event");
+const NotifyUser = require("./../Model/notify-users");
 // @route     GET api/user
 // @desc      FETCH User
 // @access    Private
@@ -289,6 +292,107 @@ router.put("/:id", async (req, res) => {
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ msg: "Server Error login" });
+  }
+});
+router.post("/get-job-for-alumni", async (req, res) => {
+  try {
+    const { course_id } = req.body;
+    const jobs = await Job.find().lean();
+    let toShow = [];
+    for (let job of jobs) {
+      if (job.course.length > 0) {
+        job.course.forEach((data) => {
+          if (data.course.toString() === course_id.toString()) {
+            toShow.push(job);
+          }
+        });
+      } else {
+        toShow.push(job);
+      }
+    }
+    return res.status(200).json({ msg: "Job list", jobs: toShow });
+  } catch (e) {
+    return res.status(400).json({ msg: "No Job Available" });
+  }
+});
+router.post("/get-event-for-alumni", async (req, res) => {
+  try {
+    const { course_id } = req.body;
+    const jobs = await Event.find().lean();
+    let toShow = [];
+    for (let job of jobs) {
+      if (job.course.length > 0) {
+        job.course.forEach((data) => {
+          if (data.course.toString() === course_id.toString()) {
+            toShow.push(job);
+          }
+        });
+      } else {
+        toShow.push(job);
+      }
+    }
+    return res.status(200).json({ msg: "Event list", Event: toShow });
+  } catch (e) {
+    return res.status(400).json({ msg: "Failed to Get Event Data" });
+  }
+});
+router.post("/get-user-notification/:id", async (req, res) => {
+  try {
+    const { course_id, user_id } = req.body;
+    const notify_users = await NotifyUser.find().lean();
+    let toShow = [];
+    for (let notify_user of notify_users) {
+      if (notify_user.course.length > 0) {
+        notify_user.course.forEach((data) => {
+          if (data.course.toString() === course_id.toString()) {
+            const isViewed = notify_user.viewedBy.filter(
+              (data) => data.user.toString() === user_id.toString()
+            );
+            toShow.push({
+              ...notify_user,
+              viewed: isViewed.length > 0 ? true : false,
+            });
+          }
+        });
+      } else {
+        const isViewed = notify_user.viewedBy.filter(
+          (data) => data.user.toString() === user_id.toString()
+        );
+        toShow.push({
+          ...notify_user,
+          viewed: isViewed.length > 0 ? true : false,
+        });
+      }
+    }
+    return res.status(200).json({ msg: "Event list", Event: toShow });
+  } catch (e) {
+    return res.status(400).json({ msg: "Failed" });
+  }
+});
+router.post("/update-viewed-notification", async (req, res) => {
+  try {
+    const { user_id, notification_id } = req.body;
+    const isUserAlreadyInList = await NotifyUser({
+      _id: notification_id,
+      "viewedBy.user": user_id,
+    }).lean();
+    if (isUserAlreadyInList) {
+      return res.status(200).json({ msg: "Already Viewed" });
+    } else {
+      const pushing = await NotifyUser.updateOne(
+        { _id: notification_id },
+        {
+          $push: {
+            viewedBy: {
+              user: user_id,
+            },
+          },
+        }
+      );
+      return res.status(200).json({ msg: "Already Viewed", pushing });
+    }
+  } catch (e) {
+    return res.status(400).json({ msg: "Failed" });
   }
 });
 module.exports = router;
