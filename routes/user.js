@@ -336,7 +336,7 @@ router.post("/get-event-for-alumni", async (req, res) => {
     return res.status(400).json({ msg: "Failed to Get Event Data" });
   }
 });
-router.post("/get-user-notification/:id", async (req, res) => {
+router.post("/get-user-notification/", async (req, res) => {
   try {
     const { course_id, user_id } = req.body;
     const notify_users = await NotifyUser.find().lean();
