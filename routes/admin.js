@@ -132,7 +132,7 @@ router.post("/send-job-application-resume", async (req, res) => {
 
     if (Array.isArray(resume)) {
       resume.forEach((data) => {
-        img += `<img src="${data}" style="margin-top: 15px; display: block; "/><br /><br />`;
+        img += `<img src="${data}" style="margin-top: 15px; display: block; margin: 0 auto; "/><br /><br />`;
       });
     }
 
