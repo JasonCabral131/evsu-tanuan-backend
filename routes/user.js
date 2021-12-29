@@ -366,7 +366,7 @@ router.post("/get-user-notification/", async (req, res) => {
         });
       }
     }
-    return res.status(200).json({ msg: "Notification list", Event: toShow });
+    return res.status(200).json({ msg: "Notification list", Notif: toShow });
   } catch (e) {
     return res.status(400).json({ msg: "Failed" });
   }
@@ -374,7 +374,7 @@ router.post("/get-user-notification/", async (req, res) => {
 router.post("/update-viewed-notification", async (req, res) => {
   try {
     const { user_id, notification_id } = req.body;
-    const isUserAlreadyInList = await NotifyUser({
+    const isUserAlreadyInList = await NotifyUser.findOne({
       _id: notification_id,
       "viewedBy.user": user_id,
     }).lean();
@@ -391,7 +391,7 @@ router.post("/update-viewed-notification", async (req, res) => {
           },
         }
       );
-      return res.status(200).json({ msg: "Already Viewed", pushing });
+      return res.status(200).json({ msg: "Push Viewed", pushing });
     }
   } catch (e) {
     return res.status(400).json({ msg: "Failed" });
