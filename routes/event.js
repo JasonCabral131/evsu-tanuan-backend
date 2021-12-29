@@ -289,4 +289,20 @@ router.post("/attend-event/", async (req, res) => {
     return res.status(400).json({ msg: "Failed to Submit Data" });
   }
 });
+router.post("/user-attend-event-info", async (req, res) => {
+  try {
+    const { atttendId } = req.body;
+    const attendInfo = await EventAttendace.findOne({ _id: atttendId })
+      .populate("event")
+      .populate("user")
+      .lean();
+    if (attendInfo) {
+      return res.status(200).json(attendInfo);
+    } else {
+      return res.status(400).json({ msg: "failed to get data" });
+    }
+  } catch (e) {
+    return res.status(400).json({ msg: "failed to get data" });
+  }
+});
 module.exports = router;
