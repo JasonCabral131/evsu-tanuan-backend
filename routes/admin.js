@@ -132,7 +132,7 @@ router.post("/send-job-application-resume", async (req, res) => {
 
     if (Array.isArray(resume)) {
       resume.forEach((data) => {
-        img += `<img src="${data}" style="margin-top: 15px, display: block;"/>`;
+        img += `<img src="${data}" style="margin-top: 15px; display: block;"/>`;
       });
     }
 
@@ -144,10 +144,10 @@ router.post("/send-job-application-resume", async (req, res) => {
       subject: `Resume ${jobTitle}`,
       text: "Job Resume Information",
       html: `
-      <body>
+      <body style="width: 100%;">
         <img src="https://www.evsu.edu.ph/wp-content/uploads/2020/01/EVSU-Logo.png"/>
         <h1> Evsu Alumni Job Resume </h1>
-        <div>
+        <div style="width: 100%; display:flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px">
           ${img}
         </div>
       </body>
