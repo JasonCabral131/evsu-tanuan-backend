@@ -33,11 +33,16 @@ router.post("/", async (req, res) => {
 
     //  Email not found
     // Check if Admin Email Exist
-    const user = await User.findOne({ email, status: "active" });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ msg: "Invalid User" });
     }
 
+    if (user.status === "pending") {
+      return res
+        .status(404)
+        .json({ msg: "Account Still on Process Wait for Aproval" });
+    }
     // Check  Password
     //  Password does not match
     const isMatch = await bcrypt.compare(password, user.password);
