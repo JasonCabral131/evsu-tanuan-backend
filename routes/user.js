@@ -133,7 +133,9 @@ router.post(
 );
 router.get("/get-user-information/:id", async (req, res) => {
   try {
-    const info = await User.findOne({ _id: req.params.id }).lean();
+    const info = await User.findOne({ _id: req.params.id })
+      .populate("course", "courseName")
+      .lean();
     if (info) {
       return res.status(200).json(info);
     } else {
