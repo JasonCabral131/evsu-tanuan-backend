@@ -8,7 +8,7 @@ const EventSchema = mongoose.Schema({
     type: String,
   },
   eventSchedule: {
-    type: Date,
+    type: String,
   },
   eventImage: [
     {

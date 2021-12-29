@@ -1,11 +1,13 @@
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
 const cloudinary = require("./../config/cloudinaryConfig");
+const auth = require("./../middleware/auth");
 //Models
 const User = require("../Model/User");
 const { imageUpload } = require("./../middleware/common-middleware");
 const Notify = require("./../Model/notifier");
 const Job = require("./../Model/Job");
+const JobApply = require("./../Model/JobApply");
 const Event = require("./..//Model/Event");
 const NotifyUser = require("./../Model/notify-users");
 // @route     GET api/user
@@ -294,7 +296,7 @@ router.put("/:id", async (req, res) => {
     res.status(500).json({ msg: "Server Error login" });
   }
 });
-router.post("/get-job-for-alumni", async (req, res) => {
+router.post("/get-job-for-alumni", auth, async (req, res) => {
   try {
     const { course_id } = req.body;
     const jobs = await Job.find().lean();
@@ -315,7 +317,7 @@ router.post("/get-job-for-alumni", async (req, res) => {
     return res.status(400).json({ msg: "No Job Available" });
   }
 });
-router.post("/get-event-for-alumni", async (req, res) => {
+router.post("/get-event-for-alumni", auth, async (req, res) => {
   try {
     const { course_id } = req.body;
     const jobs = await Event.find().lean();
@@ -336,7 +338,7 @@ router.post("/get-event-for-alumni", async (req, res) => {
     return res.status(400).json({ msg: "Failed to Get Event Data" });
   }
 });
-router.post("/get-user-notification/", async (req, res) => {
+router.post("/get-user-notification/", auth, async (req, res) => {
   try {
     const { course_id, user_id } = req.body;
     const notify_users = await NotifyUser.find().lean();
@@ -371,7 +373,7 @@ router.post("/get-user-notification/", async (req, res) => {
     return res.status(400).json({ msg: "Failed" });
   }
 });
-router.post("/update-viewed-notification", async (req, res) => {
+router.post("/update-viewed-notification", auth, async (req, res) => {
   try {
     const { user_id, notification_id } = req.body;
     const isUserAlreadyInList = await NotifyUser.findOne({
@@ -395,6 +397,29 @@ router.post("/update-viewed-notification", async (req, res) => {
     }
   } catch (e) {
     return res.status(400).json({ msg: "Failed" });
+  }
+});
+
+router.post("/get-job-information-to-apply", auth, async (req, res) => {
+  try {
+    const { jobId, userId } = req.body;
+    const ifJobExist = await Job.findOne({ _id: jobId }).lean();
+    if (ifJobExist) {
+      const isJobAlreadyApplied = await JobApply.findOne({
+        job: jobId,
+        user: userId,
+      }).lean();
+      return res
+        .status(400)
+        .json({
+          msg: "Job Information",
+          job: { ...ifJobExist, applied: isJobAlreadyApplied ? true : false },
+        });
+    } else {
+      return res.status(200).json({ msg: "Failed to get Job Details" });
+    }
+  } catch (e) {
+    return res.status(200).json({ msg: "Failed to get Job Details" });
   }
 });
 module.exports = router;

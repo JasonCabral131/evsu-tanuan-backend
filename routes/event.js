@@ -25,7 +25,7 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
     let eventObject = {
       eventTitle,
       eventDescription,
-      eventSchedule,
+      eventSchedule: new Date(eventSchedule).toLocaleDateString(),
       course: JSON.parse(type)
         ? []
         : coursx.map((data) => {
@@ -84,7 +84,7 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
         const sending = await sendingEmail(mailOptions);
         const sendNotify = await new NotifyUser({
           link: `/event-information-to-attend/${save._id}`,
-          message: `You Are Invited to Attend this event!, check it now!! => <Link to={${`/event-information-to-attend/${save._id}`}} style={{fontWeight: 'bolder', letterSpacing: 2}}>${eventTitle}</Link>`,
+          message: `You Are Invited to Attend this event!, check it now!! <span style={{fontWeight: 'bolder', letterSpacing: 2}}>${eventTitle}</span>`,
           course: JSON.parse(type)
             ? []
             : coursx.map((data) => {
@@ -171,7 +171,7 @@ router.put("/:id", imageUpload.array("images"), async (req, res) => {
         $set: {
           eventTitle,
           eventDescription,
-          eventSchedule,
+          eventSchedule: new Date(eventSchedule).toLocaleDateString(),
           course: JSON.parse(type) ? [] : courx,
         },
       }

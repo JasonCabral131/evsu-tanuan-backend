@@ -79,14 +79,14 @@ router.post("/", imageUpload.array("images"), async (req, res) => {
                   <h1> We are Hiring at ${jobCompany}! </h1> 
                   <h2> Looking for a ${jobTitle}. </h2> 
                   <p> <span style="font-weight:bold;"> Job description </span>  ${jobDescription}. </p> <br/>
-                  <p> If you are interested, please emails us your resume at ${jobCompany}@gmail.com Thank you! </p>
+                  <p> If you are interested, please emails us your resume at ${email} Thank you! </p>
                 </body>
                 `,
         };
         const sending = await sendingEmail(mailOptions);
         const sendNotify = await new NotifyUser({
           link: `/job-offer-information/${save._id}`,
-          message: `New Job Offering Await you check it now!! => <Link to={${`/job-offer-information/${save._id}`}} style={{fontWeight: 'bolder', letterSpacing: 2}}>${jobTitle}</Link>`,
+          message: `New Job Offering Await you check it now!!  <span style={{fontWeight: 'bolder', letterSpacing: 2}}>${jobTitle}</span>`,
           course: JSON.parse(type)
             ? []
             : coursx.map((data) => {
