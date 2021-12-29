@@ -226,7 +226,7 @@ router.post("/update-status-user", async (req, res) => {
 });
 router.post("/deleting-pending-request", async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId, cloudinary_id } = req.body;
     const isActive = await User.findOne({
       _id: userId,
       status: { $ne: "pending" },
@@ -237,6 +237,7 @@ router.post("/deleting-pending-request", async (req, res) => {
 
     const deletedUser = await User.deleteOne({ _id: userId });
     if (deletedUser) {
+      await cloudinary.uploader.destroy(cloudinary_id);
       return res.status(200).json({ msg: "Delete Success fully", deletedUser });
     }
     return res.status(400).json({ msg: "Failed to delete" });
