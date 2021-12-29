@@ -300,7 +300,7 @@ router.put("/:id", auth, async (req, res) => {
 router.post("/get-job-for-alumni", auth, async (req, res) => {
   try {
     const { course_id } = req.body;
-    const jobs = await Job.find().lean();
+    const jobs = await Job.find().sort({ date: -1 }).lean();
     let toShow = [];
     for (let job of jobs) {
       if (job.course.length > 0) {
@@ -321,7 +321,7 @@ router.post("/get-job-for-alumni", auth, async (req, res) => {
 router.post("/get-event-for-alumni", auth, async (req, res) => {
   try {
     const { course_id } = req.body;
-    const jobs = await Event.find().lean();
+    const jobs = await Event.find().sort({ date: -1 }).lean();
     let toShow = [];
     for (let job of jobs) {
       if (job.course.length > 0) {
@@ -342,7 +342,7 @@ router.post("/get-event-for-alumni", auth, async (req, res) => {
 router.post("/get-user-notification/", auth, async (req, res) => {
   try {
     const { course_id, user_id } = req.body;
-    const notify_users = await NotifyUser.find().lean();
+    const notify_users = await NotifyUser.find().sort({ Date: -1 }).lean();
     let toShow = [];
     for (let notify_user of notify_users) {
       if (notify_user.course.length > 0) {
@@ -433,12 +433,10 @@ router.post("/get-event-information-to-attend", async (req, res) => {
       for (let attending of attendings) {
         users.push({ ...attending.user });
       }
-      return res
-        .status(200)
-        .json({
-          msg: "Event Information",
-          eventInfo: { ...isEventExist, attending: users },
-        });
+      return res.status(200).json({
+        msg: "Event Information",
+        eventInfo: { ...isEventExist, attending: users },
+      });
     } else {
       return res.status(400).json({ msg: "Failed to get Event Information" });
     }
