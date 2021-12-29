@@ -147,7 +147,7 @@ router.post("/send-job-application-resume", async (req, res) => {
       <body>
         <img src="https://www.evsu.edu.ph/wp-content/uploads/2020/01/EVSU-Logo.png"/>
         <h1> Evsu Alumni Job Resume </h1>
-        <div style="width: 100%; height: auto; display:flex; flex-direction: column; justify-content: center; align-items: center">
+        <div>
           ${img}
         </div>
       </body>
