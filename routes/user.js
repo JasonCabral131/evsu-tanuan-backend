@@ -348,6 +348,7 @@ router.post("/get-user-notification/", async (req, res) => {
             const isViewed = notify_user.viewedBy.filter(
               (data) => data.user.toString() === user_id.toString()
             );
+            delete notify_user.viewedBy;
             toShow.push({
               ...notify_user,
               viewed: isViewed.length > 0 ? true : false,
@@ -358,13 +359,14 @@ router.post("/get-user-notification/", async (req, res) => {
         const isViewed = notify_user.viewedBy.filter(
           (data) => data.user.toString() === user_id.toString()
         );
+        delete notify_user.viewedBy;
         toShow.push({
           ...notify_user,
           viewed: isViewed.length > 0 ? true : false,
         });
       }
     }
-    return res.status(200).json({ msg: "Event list", Event: toShow });
+    return res.status(200).json({ msg: "Notification list", Event: toShow });
   } catch (e) {
     return res.status(400).json({ msg: "Failed" });
   }
