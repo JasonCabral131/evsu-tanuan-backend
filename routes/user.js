@@ -512,7 +512,7 @@ router.get("/get-job-apply", auth, async (req, res) => {
     return res.status(400).json({ msg: "Failed to Job Application list" });
   }
 });
-router.get("get-event-to-attend", auth, async (req, res) => {
+router.get("/get-event-to-attend", auth, async (req, res) => {
   try {
     const eventList = await EventAttend.find({ user: req.user })
       .populate("event")
