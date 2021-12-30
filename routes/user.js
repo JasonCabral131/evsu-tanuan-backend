@@ -255,47 +255,7 @@ router.post("/deleting-pending-request", auth, async (req, res) => {
 // @desc      Update User Account
 // @access    Private
 router.put("/:id", auth, async (req, res) => {
-  const {
-    firstname,
-    lastname,
-    middlename,
-    dateOfBirth,
-    placeOfBirth,
-    course,
-    yearGraduated,
-    presentOccupation,
-    companyAddress,
-    phone,
-    address,
-    email,
-    sex,
-  } = req.body;
-  try {
-    const updatedUser = await User.updateOne(
-      { _id: req.params.id },
-      {
-        $set: {
-          firstname,
-          lastname,
-          middlename,
-          dateOfBirth,
-          placeOfBirth,
-          course,
-          yearGraduated,
-          presentOccupation,
-          companyAddress,
-          phone,
-          address,
-          email,
-          sex,
-        },
-      }
-    );
-    res.status(200).json({ msg: "Update Success fully", updatedUser });
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).json({ msg: "Server Error login" });
-  }
+  return res.status(400).json({ failed: "ngi-" });
 });
 router.post("/get-job-for-alumni", auth, async (req, res) => {
   try {
@@ -421,7 +381,7 @@ router.post("/get-job-information-to-apply", auth, async (req, res) => {
     return res.status(400).json({ msg: "Failed to get Job Details" });
   }
 });
-router.post("/get-event-information-to-attend", async (req, res) => {
+router.post("/get-event-information-to-attend", auth, async (req, res) => {
   try {
     const { eventId, userId } = req.body;
     const isEventExist = await Event.findOne({ _id: eventId }).lean();
@@ -451,6 +411,141 @@ router.post("/get-event-information-to-attend", async (req, res) => {
     }
   } catch (e) {
     return res.status(400).json({ msg: "Failed to get Event Information" });
+  }
+});
+router.post(
+  "/update-user-profile",
+  auth,
+  imageUpload.single("profile"),
+  async (req, res) => {
+    try {
+      const oldProfile = await User.findOne({ _id: req.user }).lean();
+      if (oldProfile) {
+        if (req.file) {
+          const result = await cloudinary.uploader.upload(req.file.path);
+          let profile = {
+            url: result.secure_url,
+            cloudinary_id: result.public_id,
+          };
+          const updating = await User.findOneAndUpdate(
+            { _id: req.user },
+            { $set: { profile } },
+            { upsert: true }
+          );
+          if (updating) {
+            await cloudinary.uploader.destroy(oldProfile.profile.cloudinary_id);
+            return res
+              .status(200)
+              .json({ msg: "Profile Updated Successfully" });
+          } else {
+            return res.status(400).json({ msg: "Failed to updated Profile" });
+          }
+        }
+      } else {
+        return res.status(400).json({ msg: "Failed to updated Profile" });
+      }
+    } catch (e) {
+      return res.status(400).json({ msg: "Failed to updated Profile" });
+    }
+  }
+);
+router.post("/update-user-information", auth, async (req, res) => {
+  try {
+    const {
+      oldpassword,
+      firstname,
+      middlename,
+      lastname,
+      sex,
+      dateOfBirth,
+      placeOfBirth,
+      yearGraduated,
+      presentOccupation,
+      companyAddress,
+      phone,
+      address,
+      email,
+    } = req.body;
+    const isUserExist = await User.findOne({ _id: req.user }).lean();
+
+    if (isUserExist) {
+      const isMatch = await bcrypt.compare(oldpassword, isUserExist.password);
+      if (!isMatch) {
+        return res.status(400).json({ msg: "Password Does not Math" });
+      }
+      const updatedUser = await User.updateOne(
+        { _id: req.user },
+        {
+          $set: {
+            firstname,
+            lastname,
+            middlename,
+            dateOfBirth,
+            placeOfBirth,
+            course,
+            yearGraduated,
+            presentOccupation,
+            companyAddress,
+            phone,
+            address,
+            email,
+            sex,
+          },
+        }
+      );
+      return res.status(200).json({ msg: "Update Success fully", updatedUser });
+    } else {
+      return res.status(400).json({ msg: "User Not Found" });
+    }
+  } catch (e) {
+    return res.status(400).json({ msg: "Failed to updated Profile" });
+  }
+});
+router.get("/get-job-apply", auth, async (req, res) => {
+  try {
+    const jobList = await JobApply.find({ user: req.user })
+      .populate("job")
+      .sort({ date: -1 })
+      .lean();
+    return res.status(200).json(jobList);
+  } catch (e) {
+    return res.status(400).json({ msg: "Failed to Job Application list" });
+  }
+});
+router.get("get-event-to-attend", auth, async (req, res) => {
+  try {
+    const eventList = await EventAttend.find({ user: req.user })
+      .populate("event")
+      .sort({ date: -1 })
+      .lean();
+    return res.status(200).json(eventList);
+  } catch (e) {
+    return res.status(400).json({ msg: "Failed to Job Application list" });
+  }
+});
+router.post("/update-password-user", auth, async (req, res) => {
+  try {
+    const { oldpassword, new_password } = req.body;
+    const isUserExist = await User.findOne({ _id: req.user }).lean();
+    if (isUserExist) {
+      const isMatch = await bcrypt.compare(oldpassword, isUserExist.password);
+      if (!isMatch) {
+        return res.status(400).json({ msg: "Password Does not Math" });
+      }
+      const updatedUser = await User.updateOne(
+        { _id: req.user },
+        {
+          $set: {
+            password: await bcrypt.hash(new_password, 10),
+          },
+        }
+      );
+      return res.status(200).json({ msg: "Update Success fully", updatedUser });
+    } else {
+      return res.status(400).json({ msg: "User Not Found" });
+    }
+  } catch (e) {
+    return res.status(400);
   }
 });
 module.exports = router;
