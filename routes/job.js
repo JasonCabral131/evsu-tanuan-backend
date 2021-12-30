@@ -308,9 +308,9 @@ router.post(
             link: `/job-applicant-info/${saving._id}`,
             message: `New Application Found in ( ${
               findJob.jobTitle
-            } ) => <Link style={{fontWeight: 'bolder', letterSpacing: 2}} to={${`/job-applicant-info/${saving._id}`}}>${
+            } ) => <span style={{fontWeight: 'bolder', letterSpacing: 2}}>${
               findUser.firstname + " " + findUser.lastname
-            }</Link>`,
+            }</span>`,
             profile: `${findUser.profile.url}`,
           }).save();
           return res
