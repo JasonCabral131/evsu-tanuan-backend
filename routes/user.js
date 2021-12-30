@@ -428,14 +428,23 @@ router.post("/get-event-information-to-attend", async (req, res) => {
     if (isEventExist) {
       const attendings = await EventAttend.find({ event: isEventExist._id })
         .populate("user", "-password")
+        .sort({ createdAt: -1 })
         .lean();
+      const isUserAlreadyAttended = await EventAttend.findOne({
+        event: isEventExist._id,
+        user: userId,
+      }).lean();
       let users = [];
       for (let attending of attendings) {
         users.push({ ...attending.user });
       }
       return res.status(200).json({
         msg: "Event Information",
-        eventInfo: { ...isEventExist, attending: users },
+        eventInfo: {
+          ...isEventExist,
+          attending: users,
+          attended: isUserAlreadyAttended ? true : false,
+        },
       });
     } else {
       return res.status(400).json({ msg: "Failed to get Event Information" });
