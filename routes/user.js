@@ -471,7 +471,7 @@ router.post("/update-user-information", auth, async (req, res) => {
     if (isUserExist) {
       const isMatch = await bcrypt.compare(oldpassword, isUserExist.password);
       if (!isMatch) {
-        return res.status(400).json({ msg: "Password Does not Math" });
+        return res.status(400).json({ msg: "Password Does not Match" });
       }
       const updatedUser = await User.updateOne(
         { _id: req.user },
