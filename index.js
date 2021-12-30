@@ -16,13 +16,17 @@ setInterval(async () => {
   const dateNow = new Date().toLocaleDateString();
   const ifEventThisDay = await Event.findOne({ eventSchedule: dateNow }).lean();
   if (ifEventThisDay) {
-    console.log(dateNow);
-    await new NotifyUser({
-      link: `/event-information-to-attend/${ifEventThisDay._id}`,
-      message: `Event Happening right now!!,  I am hoping to see your there!!  <span style={{fontWeight: 'bolder', letterSpacing: 2}}>${ifEventThisDay.eventTitle}</span>`,
-      course: ifEventThisDay.course,
-    }).save();
-    console.log(dateNow);
+    const message = `Event Happening right now!!,  I am hoping to see your there!!  <span style={{fontWeight: 'bolder', letterSpacing: 2}}>${ifEventThisDay.eventTitle}</span>`;
+    const link = `/event-information-to-attend/${ifEventThisDay._id}`;
+    const ixExisted = await NotifyUser.findOne({ message, link }).lean();
+    if (!ixExisted) {
+      await new NotifyUser({
+        link,
+        message,
+        course: ifEventThisDay.course,
+      }).save();
+      console.log(dateNow);
+    }
   }
 }, 4000);
 // Routes
