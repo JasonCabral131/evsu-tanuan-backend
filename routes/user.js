@@ -548,4 +548,22 @@ router.post("/update-password-user", auth, async (req, res) => {
     return res.status(400);
   }
 });
+router.get("/get-degree-batch-member", auth, async (req, res) => {
+  try {
+    const isUserExist = await User.findOne({ _id: req.user }).lean();
+    if (isUserExist) {
+      const { course, _id, yearGraduated } = isUserExist;
+      const BatchMember = await User.find({
+        _id: { $ne: _id },
+        course,
+        yearGraduated,
+      }).lean();
+      return res.status(200).json(BatchMember);
+    } else {
+      return res.status(400).json({ msg: "User Not Found" });
+    }
+  } catch (e) {
+    return res.status(400).json({ msg: "Failed to Get Batch Member" });
+  }
+});
 module.exports = router;

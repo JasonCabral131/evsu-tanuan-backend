@@ -14,7 +14,9 @@ const auth = require("../middleware/auth");
 router.get("/", auth, async (req, res) => {
   // console.log(req.user, "User Id");
   try {
-    const user = await User.findOne({ _id: req.user }).select("-password");
+    const user = await User.findOne({ _id: req.user })
+      .populate("course")
+      .select("-password");
     res.status(200).json(user);
   } catch (err) {
     console.error(err.message);
