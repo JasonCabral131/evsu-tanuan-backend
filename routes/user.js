@@ -440,6 +440,8 @@ router.post(
           } else {
             return res.status(400).json({ msg: "Failed to updated Profile" });
           }
+        } else {
+          return res.status(400).json({ msg: "Failed to updated Profile" });
         }
       } else {
         return res.status(400).json({ msg: "Failed to updated Profile" });
