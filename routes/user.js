@@ -453,7 +453,6 @@ router.post("/update-user-information", auth, async (req, res) => {
   try {
     const {
       oldpassword,
-      placeOfBirth,
       presentOccupation,
       companyAddress,
       phone,
@@ -471,7 +470,6 @@ router.post("/update-user-information", auth, async (req, res) => {
         { _id: req.user },
         {
           $set: {
-            placeOfBirth,
             presentOccupation,
             companyAddress,
             phone,
