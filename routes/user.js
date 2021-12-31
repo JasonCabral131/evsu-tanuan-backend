@@ -436,7 +436,10 @@ router.post(
             await cloudinary.uploader.destroy(oldProfile.profile.cloudinary_id);
             return res
               .status(200)
-              .json({ msg: "Profile Updated Successfully" });
+              .json({
+                msg: "Profile Updated Successfully",
+                url: result.secure_url,
+              });
           } else {
             return res.status(400).json({ msg: "Failed to updated Profile" });
           }
