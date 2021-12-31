@@ -9,7 +9,7 @@ const User = require("./../Model/User");
 // @route     GET api/course
 // @desc      FETCH Course
 // @access    Private
-router.get("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const courseLists = await Course.find({ status: "active" })
       .sort({
