@@ -16,7 +16,7 @@ setInterval(async () => {
   const dateNow = new Date().toLocaleDateString();
   const ifEventThisDay = await Event.findOne({ eventSchedule: dateNow }).lean();
   if (ifEventThisDay) {
-    const message = `Event Happening right now!!,  I am hoping to see your there!!  <span style={{fontWeight: 'bolder', letterSpacing: 2}}>${ifEventThisDay.eventTitle}</span>`;
+    const message = `Event Happening right now!!,  I am hoping to see your there!!  <span style="font-weight: bold;">${ifEventThisDay.eventTitle}</span>`;
     const link = `/event-information-to-attend/${ifEventThisDay._id}`;
     const ixExisted = await NotifyUser.findOne({ message, link }).lean();
     if (!ixExisted) {

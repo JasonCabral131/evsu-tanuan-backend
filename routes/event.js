@@ -280,7 +280,7 @@ router.post("/attend-event/", auth, async (req, res) => {
     if (save) {
       await new NotifyAdmin({
         link: `/new-user-attending-event/${save._id}`,
-        message: `<span style={{ fontWeight: "bold" }}>${isUserExist.firstname} </span> has Attending the Event ( ${isEventExist.eventTitle} )`,
+        message: `<span style="font-weight: bold;">${isUserExist.firstname} </span> is Attending the Event ( ${isEventExist.eventTitle} )`,
         profile: `${isUserExist.profile.url}`,
       }).save();
       return res.status(200).json({ msg: "Successfully Submitted", save });
