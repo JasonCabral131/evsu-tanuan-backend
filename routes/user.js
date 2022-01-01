@@ -4,7 +4,10 @@ const cloudinary = require("./../config/cloudinaryConfig");
 const auth = require("./../middleware/auth");
 //Models
 const User = require("../Model/User");
-const { imageUpload } = require("./../middleware/common-middleware");
+const {
+  imageUpload,
+  sendingEmail,
+} = require("./../middleware/common-middleware");
 const Notify = require("./../Model/notifier");
 const Job = require("./../Model/Job");
 const JobApply = require("./../Model/JobApply");
@@ -220,6 +223,19 @@ router.post("/update-status-user", auth, async (req, res) => {
         { $set: { status: "active" } }
       );
       if (updating) {
+        var mailOptions = {
+          from: "Evsu Alumni Management",
+          to: email,
+          subject: `Account Activated`,
+          text: "Account is now Activated",
+          html: `
+          <body style="width: 100%;">
+            <img src="https://www.evsu.edu.ph/wp-content/uploads/2020/01/EVSU-Logo.png"/>
+            <h1> Welcome to Evsu Alumni you can now access your Account  </h1>
+          </body>
+          `,
+        };
+        await sendingEmail(mailOptions);
         return res.status(200).json({ msg: "Successfully Updated Status" });
       }
       return res.status(400).json({ msg: "Failed to Update" });
@@ -434,12 +450,10 @@ router.post(
           );
           if (updating) {
             await cloudinary.uploader.destroy(oldProfile.profile.cloudinary_id);
-            return res
-              .status(200)
-              .json({
-                msg: "Profile Updated Successfully",
-                url: result.secure_url,
-              });
+            return res.status(200).json({
+              msg: "Profile Updated Successfully",
+              url: result.secure_url,
+            });
           } else {
             return res.status(400).json({ msg: "Failed to updated Profile" });
           }
