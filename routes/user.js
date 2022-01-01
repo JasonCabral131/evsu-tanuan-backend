@@ -125,9 +125,9 @@ router.post(
       if (saving) {
         const savingNotify = await new Notify({
           link: `/new-user-sign-up/${saving._id}`,
-          message: `New User has been sign up!, Check the information for approval => <Link>${
+          message: `New User has been sign up!, Check the information for approval <span style="font-weight: bold;">${
             saving.firstname + " " + saving.lastname
-          }</Link`,
+          }</span>`,
           profile: `${saving.profile.url}`,
         }).save();
         return res
