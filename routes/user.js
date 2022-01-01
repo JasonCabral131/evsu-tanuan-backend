@@ -225,7 +225,7 @@ router.post("/update-status-user", auth, async (req, res) => {
       if (updating) {
         var mailOptions = {
           from: "Evsu Alumni Management",
-          to: email,
+          to: isExist.email,
           subject: `Account Activated`,
           text: "Account is now Activated",
           html: `
