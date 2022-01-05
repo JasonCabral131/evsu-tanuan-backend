@@ -295,7 +295,7 @@ router.post("/user-attend-event-info", auth, async (req, res) => {
     const { atttendId } = req.body;
     const attendInfo = await EventAttendace.findOne({ _id: atttendId })
       .populate("event")
-      .populate("user")
+      .populate({ path: "user", populate: { path: "course" } })
       .lean();
     if (attendInfo) {
       return res.status(200).json(attendInfo);
