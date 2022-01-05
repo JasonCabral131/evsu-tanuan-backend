@@ -233,6 +233,8 @@ router.post("/update-status-user", auth, async (req, res) => {
             <img src="https://www.evsu.edu.ph/wp-content/uploads/2020/01/EVSU-Logo.png"/>
             <h1> Welcome to Evsu Alumni you can now access your Account  </h1>
             <p style="margin-top: 10px;">Visit at <a href="https://tanauan-evsu-client.vercel.app">evsu-alumni.netlify.app</a</p>
+            <br />
+            <p style="margin-top: 10px;">Please download this application @  <a href="https://drive.google.com/file/d/1-AjLBE8wnHCQYKqkrst01BhlC19JffS_/view?usp=sharing">google drive</a</p>
           </body>
           `,
         };
